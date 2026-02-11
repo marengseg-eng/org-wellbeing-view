@@ -12,7 +12,7 @@ import {
 import { StatusBadge } from "@/components/StatusBadge";
 import { FactorChart } from "@/components/FactorChart";
 import { AIHAMatrix } from "@/components/AIHAMatrix";
-import { Activity, BarChart3, Shield, TrendingUp, UserCheck } from "lucide-react";
+import { Activity, BarChart3, Shield, TrendingUp, UserCheck, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const FACTORS = [
@@ -45,6 +45,7 @@ const getClassificacaoAutomatica = (value: number): ClassificacaoGeral => {
 };
 
 const ResultadoOrganizacional = () => {
+  const [numEntrevistados, setNumEntrevistados] = useState<number | "">(""  );
   const [factors, setFactors] = useState<Record<FactorKey, number>>({
     carga: 0,
     jornada: 0,
@@ -97,10 +98,36 @@ const ResultadoOrganizacional = () => {
               </p>
             </div>
           </div>
+          {numEntrevistados !== "" && numEntrevistados > 0 && (
+            <p className="mt-3 text-sm text-muted-foreground italic">
+              Avaliação baseada em entrevistas individualizadas com{" "}
+              <span className="font-semibold text-foreground">{numEntrevistados}</span>{" "}
+              colaboradores.
+            </p>
+          )}
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-8">
+        {/* Número de Entrevistados */}
+        <div className="flex items-center gap-3 rounded-lg border bg-card px-4 py-3">
+          <Users className="h-4 w-4 text-muted-foreground shrink-0" />
+          <Label className="text-sm text-muted-foreground whitespace-nowrap">
+            Número de Entrevistados
+          </Label>
+          <Input
+            type="number"
+            min={1}
+            value={numEntrevistados}
+            onChange={(e) =>
+              setNumEntrevistados(e.target.value === "" ? "" : Number(e.target.value))
+            }
+            className="bg-background w-32"
+            placeholder="Ex: 50"
+            required
+          />
+        </div>
+
         {/* Top stats row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Índice Geral Card */}
