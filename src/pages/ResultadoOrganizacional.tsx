@@ -12,8 +12,12 @@ import {
 import { StatusBadge } from "@/components/StatusBadge";
 import { FactorChart } from "@/components/FactorChart";
 import { AIHAMatrix } from "@/components/AIHAMatrix";
-import { Activity, BarChart3, Shield, TrendingUp, UserCheck, Users } from "lucide-react";
+import { Activity, BarChart3, Download, Shield, TrendingUp, UserCheck, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import { useRef, useCallback } from "react";
 
 const FACTORS = [
   { key: "carga", label: "Carga e Ritmo de Trabalho" },
@@ -45,6 +49,44 @@ const getClassificacaoAutomatica = (value: number): ClassificacaoGeral => {
 };
 
 const ResultadoOrganizacional = () => {
+  const reportRef = useRef<HTMLDivElement>(null);
+
+  const handleExportPDF = useCallback(async () => {
+    if (!reportRef.current) return;
+    const canvas = await html2canvas(reportRef.current, { scale: 2, useCORS: true });
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const imgRatio = canvas.height / canvas.width;
+    const imgWidth = pageWidth - 20;
+    const imgHeight = imgWidth * imgRatio;
+
+    let y = 10;
+    if (imgHeight <= pageHeight - 20) {
+      pdf.addImage(imgData, "PNG", 10, y, imgWidth, imgHeight);
+    } else {
+      // Multi-page
+      let remainingHeight = canvas.height;
+      let srcY = 0;
+      const sliceRatio = (pageHeight - 20) / imgHeight * canvas.height;
+      while (remainingHeight > 0) {
+        const sliceH = Math.min(sliceRatio, remainingHeight);
+        const sliceCanvas = document.createElement("canvas");
+        sliceCanvas.width = canvas.width;
+        sliceCanvas.height = sliceH;
+        const ctx = sliceCanvas.getContext("2d");
+        ctx?.drawImage(canvas, 0, srcY, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+        const sliceImg = sliceCanvas.toDataURL("image/png");
+        const drawH = (sliceH / canvas.width) * imgWidth;
+        pdf.addImage(sliceImg, "PNG", 10, 10, imgWidth, drawH);
+        remainingHeight -= sliceH;
+        srcY += sliceH;
+        if (remainingHeight > 0) pdf.addPage();
+      }
+    }
+    pdf.save("resultado-organizacional.pdf");
+  }, []);
   const [numEntrevistados, setNumEntrevistados] = useState<number | "">(""  );
   const [factors, setFactors] = useState<Record<FactorKey, number>>({
     carga: 0,
@@ -81,22 +123,28 @@ const ResultadoOrganizacional = () => {
   }));
 
   return (
-    <div className="min-h-screen bg-background">
+    <div ref={reportRef} className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b bg-card">
         <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-              <Activity className="h-5 w-5 text-primary-foreground" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
+                <Activity className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+                  Resultado Organizacional Consolidado
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Avaliação Psicossocial — Visão Executiva
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
-                Resultado Organizacional Consolidado
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                Avaliação Psicossocial — Visão Executiva
-              </p>
-            </div>
+            <Button onClick={handleExportPDF} variant="outline" size="sm" className="gap-2 print:hidden">
+              <Download className="h-4 w-4" />
+              Exportar PDF
+            </Button>
           </div>
           {numEntrevistados !== "" && numEntrevistados > 0 && (
             <p className="mt-3 text-sm text-muted-foreground italic">
