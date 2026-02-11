@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import {
 import { StatusBadge } from "@/components/StatusBadge";
 import { FactorChart } from "@/components/FactorChart";
 import { AIHAMatrix } from "@/components/AIHAMatrix";
-import { Activity, BarChart3, Shield, TrendingUp } from "lucide-react";
+import { Activity, BarChart3, Shield, TrendingUp, UserCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const FACTORS = [
@@ -38,6 +38,12 @@ const indiceTextColor: Record<string, string> = {
   "Crítico": "text-status-critico",
 };
 
+const getClassificacaoAutomatica = (value: number): ClassificacaoGeral => {
+  if (value <= 40) return "Conforme";
+  if (value <= 60) return "Atenção";
+  return "Crítico";
+};
+
 const ResultadoOrganizacional = () => {
   const [factors, setFactors] = useState<Record<FactorKey, number>>({
     carga: 0,
@@ -47,13 +53,26 @@ const ResultadoOrganizacional = () => {
     comunicacao: 0,
   });
 
-  const [indiceGeral, setIndiceGeral] = useState(0);
-  const [classificacao, setClassificacao] = useState<ClassificacaoGeral>("");
+  const [classificacaoTecnica, setClassificacaoTecnica] = useState<ClassificacaoGeral>("");
   const [aiha, setAiha] = useState({
     probabilidade: 0,
     severidade: 0,
     classificacao: "",
   });
+
+  const indiceGeral = useMemo(() => {
+    const values = Object.values(factors);
+    const sum = values.reduce((a, b) => a + b, 0);
+    return Math.round((sum / values.length) * 10) / 10;
+  }, [factors]);
+
+  const classificacaoAutomatica = useMemo(
+    () => getClassificacaoAutomatica(indiceGeral),
+    [indiceGeral]
+  );
+
+  // Classificação efetiva: técnica (manual) se definida, senão automática
+  const classificacaoEfetiva = classificacaoTecnica || classificacaoAutomatica;
 
   const chartData = FACTORS.map((f) => ({
     name: f.label,
@@ -88,57 +107,53 @@ const ResultadoOrganizacional = () => {
           <Card
             className={cn(
               "border-2 transition-all duration-300",
-              classificacao ? classificacaoColors[classificacao] : ""
+              classificacaoEfetiva ? classificacaoColors[classificacaoEfetiva] : ""
             )}
           >
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-base font-medium text-muted-foreground">
                 <TrendingUp className="h-4 w-4" />
-                Índice Geral Psicossocial
+                Índice Geral Psicossocial (automático)
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-end gap-4">
-                <div className="flex-1">
-                  <Input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={indiceGeral || ""}
-                    onChange={(e) => setIndiceGeral(Number(e.target.value))}
-                    className="text-3xl font-bold h-14 bg-background"
-                    placeholder="0"
-                  />
-                </div>
                 <span
                   className={cn(
-                    "text-4xl font-bold pb-1",
-                    classificacao
-                      ? indiceTextColor[classificacao]
+                    "text-4xl font-bold",
+                    classificacaoEfetiva
+                      ? indiceTextColor[classificacaoEfetiva]
                       : "text-muted-foreground"
                   )}
                 >
-                  %
+                  {indiceGeral}%
                 </span>
+              </div>
+              <div className="mt-3">
+                <StatusBadge status={classificacaoAutomatica} />
+                <span className="ml-2 text-xs text-muted-foreground">Classificação automática</span>
               </div>
             </CardContent>
           </Card>
 
-          {/* Classificação Geral Card */}
+          {/* Classificação Técnica Final Card */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-base font-medium text-muted-foreground">
-                <Shield className="h-4 w-4" />
-                Classificação Geral
+                <UserCheck className="h-4 w-4" />
+                Classificação Técnica Final
               </CardTitle>
+              <p className="text-xs text-muted-foreground">
+                Ajuste manual pelo avaliador, se necessário
+              </p>
             </CardHeader>
             <CardContent className="space-y-4">
               <Select
-                value={classificacao}
-                onValueChange={(v) => setClassificacao(v as ClassificacaoGeral)}
+                value={classificacaoTecnica}
+                onValueChange={(v) => setClassificacaoTecnica(v as ClassificacaoGeral)}
               >
                 <SelectTrigger className="bg-background">
-                  <SelectValue placeholder="Selecione a classificação" />
+                  <SelectValue placeholder="Usar classificação automática" />
                 </SelectTrigger>
                 <SelectContent className="bg-popover">
                   <SelectItem value="Conforme">Conforme</SelectItem>
@@ -146,7 +161,7 @@ const ResultadoOrganizacional = () => {
                   <SelectItem value="Crítico">Crítico</SelectItem>
                 </SelectContent>
               </Select>
-              <StatusBadge status={classificacao} />
+              <StatusBadge status={classificacaoEfetiva} />
             </CardContent>
           </Card>
         </div>
