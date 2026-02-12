@@ -1,7 +1,7 @@
-import { useState, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useMemo, useRef, useCallback } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -12,12 +12,12 @@ import {
 import { StatusBadge } from "@/components/StatusBadge";
 import { FactorChart } from "@/components/FactorChart";
 import { AIHAMatrix } from "@/components/AIHAMatrix";
-import { Activity, BarChart3, Download, Shield, TrendingUp, UserCheck, Users } from "lucide-react";
+import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import { useRef, useCallback } from "react";
 
 const FACTORS = [
   { key: "carga", label: "Carga e Ritmo de Trabalho" },
@@ -30,16 +30,16 @@ const FACTORS = [
 type FactorKey = (typeof FACTORS)[number]["key"];
 type ClassificacaoGeral = "Conforme" | "Atenção" | "Crítico" | "";
 
-const classificacaoColors: Record<string, string> = {
-  Conforme: "border-status-conforme/40 shadow-[0_0_20px_hsl(152,60%,42%,0.1)]",
-  "Atenção": "border-status-atencao/40 shadow-[0_0_20px_hsl(38,92%,50%,0.1)]",
-  "Crítico": "border-status-critico/40 shadow-[0_0_20px_hsl(0,72%,51%,0.1)]",
-};
-
 const indiceTextColor: Record<string, string> = {
   Conforme: "text-status-conforme",
   "Atenção": "text-status-atencao",
   "Crítico": "text-status-critico",
+};
+
+const indiceBorderColor: Record<string, string> = {
+  Conforme: "border-status-conforme",
+  "Atenção": "border-status-atencao",
+  "Crítico": "border-status-critico",
 };
 
 const getClassificacaoAutomatica = (value: number): ClassificacaoGeral => {
@@ -53,23 +53,25 @@ const ResultadoOrganizacional = () => {
 
   const handleExportPDF = useCallback(async () => {
     if (!reportRef.current) return;
-    const canvas = await html2canvas(reportRef.current, { scale: 2, useCORS: true });
+    const canvas = await html2canvas(reportRef.current, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff",
+    });
     const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
     const imgRatio = canvas.height / canvas.width;
-    const imgWidth = pageWidth - 20;
+    const imgWidth = pageWidth - 16;
     const imgHeight = imgWidth * imgRatio;
 
-    let y = 10;
-    if (imgHeight <= pageHeight - 20) {
-      pdf.addImage(imgData, "PNG", 10, y, imgWidth, imgHeight);
+    if (imgHeight <= pageHeight - 16) {
+      pdf.addImage(imgData, "PNG", 8, 8, imgWidth, imgHeight);
     } else {
-      // Multi-page
       let remainingHeight = canvas.height;
       let srcY = 0;
-      const sliceRatio = (pageHeight - 20) / imgHeight * canvas.height;
+      const sliceRatio = ((pageHeight - 16) / imgHeight) * canvas.height;
       while (remainingHeight > 0) {
         const sliceH = Math.min(sliceRatio, remainingHeight);
         const sliceCanvas = document.createElement("canvas");
@@ -79,7 +81,7 @@ const ResultadoOrganizacional = () => {
         ctx?.drawImage(canvas, 0, srcY, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
         const sliceImg = sliceCanvas.toDataURL("image/png");
         const drawH = (sliceH / canvas.width) * imgWidth;
-        pdf.addImage(sliceImg, "PNG", 10, 10, imgWidth, drawH);
+        pdf.addImage(sliceImg, "PNG", 8, 8, imgWidth, drawH);
         remainingHeight -= sliceH;
         srcY += sliceH;
         if (remainingHeight > 0) pdf.addPage();
@@ -87,7 +89,12 @@ const ResultadoOrganizacional = () => {
     }
     pdf.save("resultado-organizacional.pdf");
   }, []);
-  const [numEntrevistados, setNumEntrevistados] = useState<number | "">(""  );
+
+  const [numEntrevistados, setNumEntrevistados] = useState<number | "">("");
+  const [empresa, setEmpresa] = useState("");
+  const [setor, setSetor] = useState("");
+  const [dataAvaliacao, setDataAvaliacao] = useState("");
+  const [conclusao, setConclusao] = useState("");
   const [factors, setFactors] = useState<Record<FactorKey, number>>({
     carga: 0,
     jornada: 0,
@@ -95,7 +102,6 @@ const ResultadoOrganizacional = () => {
     exigencias: 0,
     comunicacao: 0,
   });
-
   const [classificacaoTecnica, setClassificacaoTecnica] = useState<ClassificacaoGeral>("");
   const [aiha, setAiha] = useState({
     probabilidade: 0,
@@ -114,7 +120,6 @@ const ResultadoOrganizacional = () => {
     [indiceGeral]
   );
 
-  // Classificação efetiva: técnica (manual) se definida, senão automática
   const classificacaoEfetiva = classificacaoTecnica || classificacaoAutomatica;
 
   const chartData = FACTORS.map((f) => ({
@@ -123,185 +128,209 @@ const ResultadoOrganizacional = () => {
   }));
 
   return (
-    <div ref={reportRef} className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-                <Activity className="h-5 w-5 text-primary-foreground" />
+    <div className="min-h-screen bg-white">
+      {/* Export button - hidden on print/PDF */}
+      <div className="print:hidden fixed top-4 right-4 z-50">
+        <Button onClick={handleExportPDF} variant="outline" size="sm" className="gap-2 bg-white shadow-sm">
+          <Download className="h-4 w-4" />
+          Exportar PDF
+        </Button>
+      </div>
+
+      {/* Report content */}
+      <div ref={reportRef} className="w-full bg-white px-8 py-6" style={{ maxWidth: "1400px", margin: "0 auto" }}>
+        {/* Title */}
+        <div className="text-center mb-1">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground uppercase">
+            Avaliação Psicossocial Organizacional
+          </h1>
+        </div>
+        <Separator className="mb-4" />
+
+        {/* Top row: Identification left, Index right */}
+        <div className="grid grid-cols-3 gap-6 mb-6">
+          {/* Left: Identification */}
+          <div className="col-span-2 space-y-3">
+            <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Empresa
+                </Label>
+                <Input
+                  value={empresa}
+                  onChange={(e) => setEmpresa(e.target.value)}
+                  className="h-8 text-sm bg-white border-border"
+                  placeholder="Nome da empresa"
+                />
               </div>
-              <div>
-                <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
-                  Resultado Organizacional Consolidado
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  Avaliação Psicossocial — Visão Executiva
-                </p>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Setor
+                </Label>
+                <Input
+                  value={setor}
+                  onChange={(e) => setSetor(e.target.value)}
+                  className="h-8 text-sm bg-white border-border"
+                  placeholder="Setor avaliado"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Data
+                </Label>
+                <Input
+                  type="date"
+                  value={dataAvaliacao}
+                  onChange={(e) => setDataAvaliacao(e.target.value)}
+                  className="h-8 text-sm bg-white border-border"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Nº de Entrevistados
+                </Label>
+                <Input
+                  type="number"
+                  min={1}
+                  value={numEntrevistados}
+                  onChange={(e) =>
+                    setNumEntrevistados(e.target.value === "" ? "" : Number(e.target.value))
+                  }
+                  className="h-8 text-sm bg-white border-border"
+                  placeholder="Ex: 50"
+                  required
+                />
               </div>
             </div>
-            <Button onClick={handleExportPDF} variant="outline" size="sm" className="gap-2 print:hidden">
-              <Download className="h-4 w-4" />
-              Exportar PDF
-            </Button>
+            {numEntrevistados !== "" && numEntrevistados > 0 && (
+              <p className="text-xs text-muted-foreground italic mt-1">
+                Avaliação baseada em entrevistas individualizadas com{" "}
+                <span className="font-semibold text-foreground">{numEntrevistados}</span>{" "}
+                colaboradores.
+              </p>
+            )}
+
+            {/* Factor inputs inline */}
+            <div className="mt-4">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                Fatores Psicossociais (%)
+              </h3>
+              <div className="grid grid-cols-5 gap-2">
+                {FACTORS.map((f) => (
+                  <div key={f.key} className="space-y-1">
+                    <Label className="text-[10px] leading-tight text-muted-foreground line-clamp-2">
+                      {f.label}
+                    </Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={factors[f.key] || ""}
+                      onChange={(e) =>
+                        setFactors((prev) => ({
+                          ...prev,
+                          [f.key]: Number(e.target.value),
+                        }))
+                      }
+                      className="h-8 text-sm bg-white border-border"
+                      placeholder="0–100"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-          {numEntrevistados !== "" && numEntrevistados > 0 && (
-            <p className="mt-3 text-sm text-muted-foreground italic">
-              Avaliação baseada em entrevistas individualizadas com{" "}
-              <span className="font-semibold text-foreground">{numEntrevistados}</span>{" "}
-              colaboradores.
-            </p>
-          )}
-        </div>
-      </header>
 
-      <main className="container mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-8">
-        {/* Número de Entrevistados */}
-        <div className="flex items-center gap-3 rounded-lg border bg-card px-4 py-3">
-          <Users className="h-4 w-4 text-muted-foreground shrink-0" />
-          <Label className="text-sm text-muted-foreground whitespace-nowrap">
-            Número de Entrevistados
-          </Label>
-          <Input
-            type="number"
-            min={1}
-            value={numEntrevistados}
-            onChange={(e) =>
-              setNumEntrevistados(e.target.value === "" ? "" : Number(e.target.value))
-            }
-            className="bg-background w-32"
-            placeholder="Ex: 50"
-            required
-          />
-        </div>
-
-        {/* Top stats row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Índice Geral Card */}
-          <Card
+          {/* Right: Index block */}
+          <div
             className={cn(
-              "border-2 transition-all duration-300",
-              classificacaoEfetiva ? classificacaoColors[classificacaoEfetiva] : ""
+              "flex flex-col items-center justify-center rounded-lg border-2 p-6",
+              classificacaoEfetiva ? indiceBorderColor[classificacaoEfetiva] : "border-border"
             )}
           >
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-base font-medium text-muted-foreground">
-                <TrendingUp className="h-4 w-4" />
-                Índice Geral Psicossocial (automático)
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-end gap-4">
-                <span
-                  className={cn(
-                    "text-4xl font-bold",
-                    classificacaoEfetiva
-                      ? indiceTextColor[classificacaoEfetiva]
-                      : "text-muted-foreground"
-                  )}
-                >
-                  {indiceGeral}%
-                </span>
-              </div>
-              <div className="mt-3">
-                <StatusBadge status={classificacaoAutomatica} />
-                <span className="ml-2 text-xs text-muted-foreground">Classificação automática</span>
-              </div>
-            </CardContent>
-          </Card>
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+              Índice Geral Psicossocial
+            </span>
+            <span
+              className={cn(
+                "text-6xl font-bold leading-none",
+                classificacaoEfetiva
+                  ? indiceTextColor[classificacaoEfetiva]
+                  : "text-muted-foreground"
+              )}
+            >
+              {indiceGeral}%
+            </span>
+            <div className="mt-3">
+              <StatusBadge status={classificacaoAutomatica} />
+            </div>
+            <span className="text-[10px] text-muted-foreground mt-1">Classificação Automática</span>
 
-          {/* Classificação Técnica Final Card */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-base font-medium text-muted-foreground">
-                <UserCheck className="h-4 w-4" />
-                Classificação Técnica Final
-              </CardTitle>
-              <p className="text-xs text-muted-foreground">
-                Ajuste manual pelo avaliador, se necessário
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Select
-                value={classificacaoTecnica}
-                onValueChange={(v) => setClassificacaoTecnica(v as ClassificacaoGeral)}
-              >
-                <SelectTrigger className="bg-background">
-                  <SelectValue placeholder="Usar classificação automática" />
-                </SelectTrigger>
-                <SelectContent className="bg-popover">
-                  <SelectItem value="Conforme">Conforme</SelectItem>
-                  <SelectItem value="Atenção">Atenção</SelectItem>
-                  <SelectItem value="Crítico">Crítico</SelectItem>
-                </SelectContent>
-              </Select>
-              <StatusBadge status={classificacaoEfetiva} />
-            </CardContent>
-          </Card>
+            <Separator className="my-3 w-full" />
+
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+              Classificação Técnica Final
+            </span>
+            <Select
+              value={classificacaoTecnica}
+              onValueChange={(v) => setClassificacaoTecnica(v as ClassificacaoGeral)}
+            >
+              <SelectTrigger className="h-8 text-sm bg-white border-border w-full">
+                <SelectValue placeholder="Automática" />
+              </SelectTrigger>
+              <SelectContent className="bg-popover">
+                <SelectItem value="Conforme">Conforme</SelectItem>
+                <SelectItem value="Atenção">Atenção</SelectItem>
+                <SelectItem value="Crítico">Crítico</SelectItem>
+              </SelectContent>
+            </Select>
+            {classificacaoTecnica && (
+              <div className="mt-2">
+                <StatusBadge status={classificacaoEfetiva} />
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Factors input + Chart */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Factor inputs */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base font-medium">
-                <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                Fatores Psicossociais
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {FACTORS.map((f) => (
-                <div key={f.key} className="space-y-1.5">
-                  <Label className="text-sm text-muted-foreground">
-                    {f.label} (%)
-                  </Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={factors[f.key] || ""}
-                    onChange={(e) =>
-                      setFactors((prev) => ({
-                        ...prev,
-                        [f.key]: Number(e.target.value),
-                      }))
-                    }
-                    className="bg-background"
-                    placeholder="0–100"
-                  />
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base font-medium">
-                Visão Geral dos Fatores
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <FactorChart factors={chartData} />
-            </CardContent>
-          </Card>
+        {/* Central: Chart full width */}
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-foreground mb-2">
+            Distribuição dos Fatores Psicossociais
+          </h3>
+          <div className="border rounded-lg p-4 bg-white">
+            <FactorChart factors={chartData} />
+          </div>
         </div>
 
-        {/* AIHA Matrix */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base font-medium">
-              <Shield className="h-4 w-4 text-muted-foreground" />
+        {/* Bottom: AIHA left, Conclusion right */}
+        <div className="grid grid-cols-2 gap-6">
+          {/* AIHA */}
+          <div>
+            <h3 className="text-sm font-semibold text-foreground mb-2">
               Matriz AIHA — Avaliação de Risco
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <AIHAMatrix data={aiha} onChange={setAiha} />
-          </CardContent>
-        </Card>
-      </main>
+            </h3>
+            <div className="border rounded-lg p-4 bg-white">
+              <AIHAMatrix data={aiha} onChange={setAiha} />
+            </div>
+          </div>
+
+          {/* Conclusion */}
+          <div>
+            <h3 className="text-sm font-semibold text-foreground mb-2">
+              Conclusão Executiva
+            </h3>
+            <div className="border rounded-lg p-4 bg-white h-full">
+              <Textarea
+                value={conclusao}
+                onChange={(e) => setConclusao(e.target.value)}
+                placeholder="Resumo executivo da avaliação (máximo 3 linhas)..."
+                className="border-0 p-0 resize-none text-sm bg-white focus-visible:ring-0 min-h-[100px]"
+                maxLength={300}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
