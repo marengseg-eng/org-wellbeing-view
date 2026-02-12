@@ -90,6 +90,41 @@ const ResultadoOrganizacional = () => {
     pdf.save("resultado-organizacional.pdf");
   }, []);
 
+  const handleExportHTML = useCallback(() => {
+    if (!reportRef.current) return;
+    const content = reportRef.current.innerHTML;
+    const htmlString = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Avaliação Psicossocial Organizacional</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #fff; color: #1e293b; }
+  .report { max-width: 1400px; margin: 0 auto; padding: 32px; }
+  input, select, textarea { border: 1px solid #ddd; border-radius: 6px; padding: 4px 8px; font-size: 14px; background: #fff; }
+  @media print {
+    @page { size: A4 landscape; margin: 10mm; }
+    body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<div class="report">
+${content}
+</div>
+</body>
+</html>`;
+    const blob = new Blob([htmlString], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "resultado-organizacional.html";
+    a.click();
+    URL.revokeObjectURL(url);
+  }, []);
+
   const [numEntrevistados, setNumEntrevistados] = useState<number | "">("");
   const [empresa, setEmpresa] = useState("");
   const [setor, setSetor] = useState("");
@@ -130,7 +165,11 @@ const ResultadoOrganizacional = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Export button - hidden on print/PDF */}
-      <div className="print:hidden fixed top-4 right-4 z-50">
+      <div className="print:hidden fixed top-4 right-4 z-50 flex gap-2">
+        <Button onClick={handleExportHTML} variant="outline" size="sm" className="gap-2 bg-white shadow-sm">
+          <Download className="h-4 w-4" />
+          Exportar HTML
+        </Button>
         <Button onClick={handleExportPDF} variant="outline" size="sm" className="gap-2 bg-white shadow-sm">
           <Download className="h-4 w-4" />
           Exportar PDF
