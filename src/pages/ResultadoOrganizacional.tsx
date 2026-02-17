@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useCallback } from "react";
+import logoLbm from "@/assets/logo-lbm.jpg";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -249,57 +250,18 @@ ${content}
 
         {/* ===== HEADER — Identidade Visual ===== */}
         <div className="bg-brand-dark px-8 py-5 flex items-center gap-6 rounded-t-lg">
-          {/* Logo area */}
+          {/* Logo */}
           <div className="flex-shrink-0">
-            {logoUrl ? (
-              <div className="relative group">
-                <img
-                  src={logoUrl}
-                  alt="Logo da empresa"
-                  className="h-16 w-auto max-w-[200px] object-contain rounded"
-                />
-                <button
-                  onClick={() => setLogoUrl(null)}
-                  className="print:hidden absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                  title="Remover logo"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => logoInputRef.current?.click()}
-                className="print:hidden h-16 w-32 border-2 border-dashed border-white/30 rounded-lg flex flex-col items-center justify-center gap-1 text-white/50 hover:text-white/80 hover:border-white/60 transition-colors cursor-pointer"
-                title="Adicionar logo"
-              >
-                <ImagePlus className="h-5 w-5" />
-                <span className="text-[9px] font-medium uppercase tracking-wider">Logo</span>
-              </button>
-            )}
-            <input
-              ref={logoInputRef}
-              type="file"
-              accept="image/png,image/jpeg,image/svg+xml"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                if (file.size > 2 * 1024 * 1024) {
-                  toast.error("Imagem deve ter no máximo 2MB.");
-                  return;
-                }
-                const url = URL.createObjectURL(file);
-                setLogoUrl(url);
-              }}
+            <img
+              src={logoUrl || logoLbm}
+              alt="LBM BORATTI"
+              className="h-14 w-auto max-w-[220px] object-contain"
             />
           </div>
 
-          {/* Brand text */}
+          {/* Subtitle */}
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-extrabold tracking-tight text-brand-primary uppercase leading-tight">
-              LBM BORATTI
-            </h1>
-            <p className="text-xs text-white/60 font-medium tracking-wide mt-0.5">
+            <p className="text-xs text-white/60 font-medium tracking-wide">
               Consultoria em Segurança e Saúde do Trabalho
             </p>
           </div>

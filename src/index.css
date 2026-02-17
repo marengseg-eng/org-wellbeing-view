@@ -56,9 +56,9 @@
     --dashboard-surface: 220 15% 96%;
     --dashboard-highlight: 222 60% 18%;
 
-    /* Brand colors */
-    --brand-primary: 21 100% 45%;
-    --brand-secondary: 0 0% 40%;
+    /* Brand colors — navy blue from logo */
+    --brand-primary: 215 60% 28%;
+    --brand-secondary: 215 30% 55%;
     --brand-dark: 222 47% 11%;
 
     --sidebar-background: 0 0% 98%;
