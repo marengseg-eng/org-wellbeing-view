@@ -148,6 +148,7 @@ ${content}
 
   const [numEntrevistados, setNumEntrevistados] = useState<number | "">("");
   const [empresa, setEmpresa] = useState("");
+  const [cnpj, setCnpj] = useState("");
   const [setor, setSetor] = useState("");
   const [dataAvaliacao, setDataAvaliacao] = useState("");
   const [conclusao, setConclusao] = useState("");
@@ -167,12 +168,12 @@ ${content}
     }
     const key = `avaliacao_${empresa.trim().toLowerCase().replace(/\s+/g, "_")}`;
     const payload = {
-      empresa, setor, dataAvaliacao, numEntrevistados, factors, classificacaoTecnica, conclusao,
+      empresa, cnpj, setor, dataAvaliacao, numEntrevistados, factors, classificacaoTecnica, conclusao,
       savedAt: new Date().toISOString(),
     };
     localStorage.setItem(key, JSON.stringify(payload));
     toast.success(`Avaliação salva para "${empresa}".`);
-  }, [empresa, setor, dataAvaliacao, numEntrevistados, factors, classificacaoTecnica, conclusao]);
+  }, [empresa, cnpj, setor, dataAvaliacao, numEntrevistados, factors, classificacaoTecnica, conclusao]);
 
   const handleLoadEmpresa = useCallback(() => {
     if (!empresa.trim()) return;
@@ -181,6 +182,7 @@ ${content}
     if (saved) {
       try {
         const d = JSON.parse(saved);
+        setCnpj(d.cnpj || "");
         setSetor(d.setor || "");
         setDataAvaliacao(d.dataAvaliacao || "");
         setNumEntrevistados(d.numEntrevistados ?? "");
@@ -254,7 +256,7 @@ ${content}
             <div className="col-span-2 flex flex-col">
               <div className="grid grid-cols-2 gap-x-6 gap-y-4">
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                     Empresa
                   </Label>
                   <Input
@@ -266,7 +268,18 @@ ${content}
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    CNPJ
+                  </Label>
+                  <Input
+                    value={cnpj}
+                    onChange={(e) => setCnpj(e.target.value)}
+                    className="h-9 text-sm bg-white border-border"
+                    placeholder="00.000.000/0000-00"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                     Setor
                   </Label>
                   <Input
@@ -277,7 +290,7 @@ ${content}
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                     Data
                   </Label>
                   <Input
@@ -288,7 +301,7 @@ ${content}
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                     Nº de Entrevistados
                   </Label>
                   <Input
@@ -314,7 +327,7 @@ ${content}
 
               {/* Factor inputs */}
               <div className="mt-auto pt-6">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
                   Fatores Psicossociais (%)
                 </h3>
                 <div className="grid grid-cols-5 gap-3">
@@ -350,7 +363,7 @@ ${content}
                 classificacaoEfetiva ? indiceBorderColor[classificacaoEfetiva] : "border-border"
               )}
             >
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
                 Índice Geral Psicossocial
               </span>
               <span
@@ -370,7 +383,7 @@ ${content}
 
               <Separator className="my-4 w-full" />
 
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">
                 Classificação Técnica Final
               </span>
               <Select
