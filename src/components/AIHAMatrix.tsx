@@ -16,10 +16,12 @@ interface AIHAData {
 }
 
 const riskStyles: Record<string, string> = {
+  Conforme: "bg-status-conforme/15 text-status-conforme border-status-conforme/30",
+  "Atenção": "bg-status-atencao/15 text-status-atencao border-status-atencao/30",
+  "Crítico": "bg-status-critico/15 text-status-critico border-status-critico/30",
   Baixo: "bg-risk-baixo/15 text-risk-baixo border-risk-baixo/30",
   Moderado: "bg-risk-moderado/15 text-risk-moderado border-risk-moderado/30",
   Alto: "bg-risk-alto/15 text-risk-alto border-risk-alto/30",
-  "Crítico": "bg-risk-critico/15 text-risk-critico border-risk-critico/30",
 };
 
 interface AIHAMatrixProps {
@@ -40,9 +42,9 @@ function getCellColor(risk: number): string {
 
 function getClassificacao(risk: number): string {
   if (risk >= 20) return "Crítico";
-  if (risk >= 12) return "Alto";
-  if (risk >= 6) return "Moderado";
-  return "Baixo";
+  if (risk >= 12) return "Atenção";
+  if (risk >= 6) return "Atenção";
+  return "Conforme";
 }
 
 export const AIHAMatrix = ({ data, onChange }: AIHAMatrixProps) => {
