@@ -133,10 +133,16 @@
   }
   * {
     overflow: visible !important;
-    break-inside: avoid;
   }
-  .border, .rounded-lg, .border-2 {
-    break-inside: avoid;
+  .print-page {
+    page-break-after: always;
+    break-after: page;
+    min-height: calc(210mm - 12mm);
+    box-sizing: border-box;
+  }
+  .print-page:last-child {
+    page-break-after: auto;
+    break-after: auto;
   }
   img, svg, canvas {
     break-inside: avoid;
