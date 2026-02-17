@@ -24,7 +24,7 @@ const riskStyles: Record<string, string> = {
 
 interface AIHAMatrixProps {
   data: AIHAData;
-  onChange: (data: AIHAData) => void;
+  onChange?: (data: AIHAData) => void;
 }
 
 // Risk value = P × S
@@ -51,6 +51,7 @@ export const AIHAMatrix = ({ data, onChange }: AIHAMatrixProps) => {
   const sevLabels = ["1", "2", "3", "4", "5"];
 
   const handleCellClick = (prob: number, sev: number) => {
+    if (!onChange) return;
     const risk = prob * sev;
     onChange({
       probabilidade: prob,

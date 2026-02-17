@@ -138,11 +138,6 @@ ${content}
     comunicacao: 0,
   });
   const [classificacaoTecnica, setClassificacaoTecnica] = useState<ClassificacaoGeral>("");
-  const [aiha, setAiha] = useState({
-    probabilidade: 0,
-    severidade: 0,
-    classificacao: "",
-  });
 
   const indiceGeral = useMemo(() => {
     const values = Object.values(factors);
@@ -156,6 +151,31 @@ ${content}
   );
 
   const classificacaoEfetiva = classificacaoTecnica || classificacaoAutomatica;
+
+  const aiha = useMemo(() => {
+    const avg = indiceGeral;
+    let prob = 1;
+    if (avg > 80) prob = 5;
+    else if (avg > 60) prob = 4;
+    else if (avg > 40) prob = 3;
+    else if (avg > 20) prob = 2;
+
+    const maxFactor = Math.max(...Object.values(factors));
+    let sev = 1;
+    if (maxFactor > 80) sev = 5;
+    else if (maxFactor > 60) sev = 4;
+    else if (maxFactor > 40) sev = 3;
+    else if (maxFactor > 20) sev = 2;
+
+    const risk = prob * sev;
+    let classificacao = "Baixo";
+    if (risk > 20) classificacao = "Crítico";
+    else if (risk > 15) classificacao = "Alto";
+    else if (risk > 10) classificacao = "Moderado";
+    else if (risk > 5) classificacao = "Moderado";
+
+    return { probabilidade: prob, severidade: sev, classificacao };
+  }, [indiceGeral, factors]);
 
   const chartData = FACTORS.map((f) => ({
     name: f.label,
@@ -347,7 +367,7 @@ ${content}
             Matriz AIHA — Avaliação de Risco
           </h3>
           <div className="border rounded-lg p-4 bg-white">
-            <AIHAMatrix data={aiha} onChange={setAiha} />
+            <AIHAMatrix data={aiha} />
           </div>
         </div>
 
