@@ -12,7 +12,7 @@ import {
 import { StatusBadge } from "@/components/StatusBadge";
 import { FactorChart } from "@/components/FactorChart";
 import { AIHAMatrix } from "@/components/AIHAMatrix";
-import { Download, Save, Printer } from "lucide-react";
+import { Download, Save, Printer, ImagePlus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
@@ -51,6 +51,8 @@ const getClassificacaoAutomatica = (value: number): ClassificacaoGeral => {
 
 const ResultadoOrganizacional = () => {
   const reportRef = useRef<HTMLDivElement>(null);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   const handlePrint = useCallback(() => {
     window.print();
@@ -245,15 +247,78 @@ ${content}
       {/* Report content */}
       <div ref={reportRef} className="w-full bg-white flex-1" style={{ maxWidth: "1400px", margin: "0 auto" }}>
 
+        {/* ===== HEADER — Identidade Visual ===== */}
+        <div className="bg-brand-dark px-8 py-5 flex items-center gap-6 rounded-t-lg">
+          {/* Logo area */}
+          <div className="flex-shrink-0">
+            {logoUrl ? (
+              <div className="relative group">
+                <img
+                  src={logoUrl}
+                  alt="Logo da empresa"
+                  className="h-16 w-auto max-w-[200px] object-contain rounded"
+                />
+                <button
+                  onClick={() => setLogoUrl(null)}
+                  className="print:hidden absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Remover logo"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => logoInputRef.current?.click()}
+                className="print:hidden h-16 w-32 border-2 border-dashed border-white/30 rounded-lg flex flex-col items-center justify-center gap-1 text-white/50 hover:text-white/80 hover:border-white/60 transition-colors cursor-pointer"
+                title="Adicionar logo"
+              >
+                <ImagePlus className="h-5 w-5" />
+                <span className="text-[9px] font-medium uppercase tracking-wider">Logo</span>
+              </button>
+            )}
+            <input
+              ref={logoInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/svg+xml"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                if (file.size > 2 * 1024 * 1024) {
+                  toast.error("Imagem deve ter no máximo 2MB.");
+                  return;
+                }
+                const url = URL.createObjectURL(file);
+                setLogoUrl(url);
+              }}
+            />
+          </div>
+
+          {/* Brand text */}
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl font-extrabold tracking-tight text-brand-primary uppercase leading-tight">
+              LBM BORATTI
+            </h1>
+            <p className="text-xs text-white/60 font-medium tracking-wide mt-0.5">
+              Consultoria em Segurança e Saúde do Trabalho
+            </p>
+          </div>
+
+          {/* Title */}
+          <div className="text-right flex-shrink-0">
+            <h2 className="text-lg font-bold text-white uppercase tracking-tight leading-tight">
+              Avaliação Psicossocial<br />Organizacional
+            </h2>
+            <p className="text-[10px] text-white/40 mt-1 font-medium">
+              Gerenciamento de Riscos Psicossociais — NR-1
+            </p>
+          </div>
+        </div>
+
+        <div className="h-1 bg-brand-primary" />
+
         {/* ===== PAGE 1: Identification + Index ===== */}
         <div className="print-page px-8 py-6 flex flex-col">
-          <div className="text-center mb-2">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground uppercase">
-              Avaliação Psicossocial Organizacional
-            </h1>
-          </div>
-          <Separator className="mb-4" />
-
           <div className="grid grid-cols-3 gap-6 flex-1">
             {/* Left: Identification */}
             <div className="col-span-2 flex flex-col">
