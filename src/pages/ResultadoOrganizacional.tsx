@@ -238,17 +238,17 @@ ${content}
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Report content */}
-      <div ref={reportRef} className="w-full bg-white px-8 py-6 flex-1" style={{ maxWidth: "1400px", margin: "0 auto" }}>
+      <div ref={reportRef} className="w-full bg-white px-8 py-4 flex-1" style={{ maxWidth: "1400px", margin: "0 auto" }}>
         {/* Title */}
         <div className="text-center mb-1">
           <h1 className="text-2xl font-bold tracking-tight text-foreground uppercase">
             Avaliação Psicossocial Organizacional
           </h1>
         </div>
-        <Separator className="mb-4" />
+        <Separator className="mb-3" />
 
         {/* Top row: Identification left, Index right */}
-        <div className="grid grid-cols-3 gap-6 mb-6">
+        <div className="grid grid-cols-3 gap-4 mb-4">
           {/* Left: Identification */}
           <div className="col-span-2 space-y-3">
             <div className="grid grid-cols-2 gap-x-6 gap-y-3">
@@ -393,37 +393,38 @@ ${content}
           </div>
         </div>
 
-        {/* Central: Chart full width */}
-        <div className="mb-6">
-          <h3 className="text-sm font-semibold text-foreground mb-2">
-            Distribuição dos Fatores Psicossociais
-          </h3>
-          <div className="border rounded-lg p-4 bg-white">
-            <FactorChart factors={chartData} />
+        {/* Chart + AIHA Matrix side by side */}
+        <div className="grid grid-cols-3 gap-4 mb-4">
+          <div className="col-span-2">
+            <h3 className="text-sm font-semibold text-foreground mb-1">
+              Distribuição dos Fatores Psicossociais
+            </h3>
+            <div className="border rounded-lg p-3 bg-white">
+              <FactorChart factors={chartData} />
+            </div>
           </div>
-        </div>
 
-        {/* AIHA Matrix */}
-        <div className="mb-6">
-          <h3 className="text-sm font-semibold text-foreground mb-2">
-            Matriz AIHA — Avaliação de Risco
-          </h3>
-          <div className="border rounded-lg p-4 bg-white">
-            <AIHAMatrix data={aiha} />
+          <div>
+            <h3 className="text-sm font-semibold text-foreground mb-1">
+              Matriz AIHA — Risco
+            </h3>
+            <div className="border rounded-lg p-3 bg-white">
+              <AIHAMatrix data={aiha} />
+            </div>
           </div>
         </div>
 
         {/* Conclusion */}
         <div>
-          <h3 className="text-sm font-semibold text-foreground mb-2">
+          <h3 className="text-sm font-semibold text-foreground mb-1">
             Conclusão Executiva
           </h3>
-          <div className="border rounded-lg p-4 bg-white">
+          <div className="border rounded-lg p-3 bg-white">
             <Textarea
               value={conclusao}
               onChange={(e) => setConclusao(e.target.value)}
               placeholder="Resumo executivo da avaliação (máximo 3 linhas)..."
-              className="border-0 p-0 resize-none text-sm bg-white focus-visible:ring-0 min-h-[100px]"
+              className="border-0 p-0 resize-none text-sm bg-white focus-visible:ring-0 min-h-[80px]"
               maxLength={300}
             />
           </div>
