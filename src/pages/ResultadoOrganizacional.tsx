@@ -12,7 +12,7 @@ import {
 import { StatusBadge } from "@/components/StatusBadge";
 import { FactorChart } from "@/components/FactorChart";
 import { AIHAMatrix } from "@/components/AIHAMatrix";
-import { Download, Save } from "lucide-react";
+import { Download, Save, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
@@ -52,40 +52,60 @@ const getClassificacaoAutomatica = (value: number): ClassificacaoGeral => {
 const ResultadoOrganizacional = () => {
   const reportRef = useRef<HTMLDivElement>(null);
 
+  const handlePrint = useCallback(() => {
+    window.print();
+  }, []);
+
   const handleExportPDF = useCallback(async () => {
     if (!reportRef.current) return;
-    const canvas = await html2canvas(reportRef.current, {
+    const el = reportRef.current;
+    // Temporarily expand to full width for capture
+    const origMaxW = el.style.maxWidth;
+    const origMargin = el.style.margin;
+    el.style.maxWidth = "none";
+    el.style.margin = "0";
+
+    const canvas = await html2canvas(el, {
       scale: 2,
       useCORS: true,
       backgroundColor: "#ffffff",
+      windowWidth: 1400,
+      scrollY: -window.scrollY,
     });
-    const imgData = canvas.toDataURL("image/png");
+
+    el.style.maxWidth = origMaxW;
+    el.style.margin = origMargin;
+
     const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 8;
+    const usableW = pageWidth - margin * 2;
+    const usableH = pageHeight - margin * 2;
     const imgRatio = canvas.height / canvas.width;
-    const imgWidth = pageWidth - 16;
-    const imgHeight = imgWidth * imgRatio;
+    const totalImgH = usableW * imgRatio;
 
-    if (imgHeight <= pageHeight - 16) {
-      pdf.addImage(imgData, "PNG", 8, 8, imgWidth, imgHeight);
+    if (totalImgH <= usableH) {
+      const imgData = canvas.toDataURL("image/png");
+      pdf.addImage(imgData, "PNG", margin, margin, usableW, totalImgH);
     } else {
-      let remainingHeight = canvas.height;
+      // Multi-page: slice source canvas per page
+      const pxPerPage = (usableH / totalImgH) * canvas.height;
       let srcY = 0;
-      const sliceRatio = ((pageHeight - 16) / imgHeight) * canvas.height;
-      while (remainingHeight > 0) {
-        const sliceH = Math.min(sliceRatio, remainingHeight);
+      let page = 0;
+      while (srcY < canvas.height - 1) {
+        const sliceH = Math.min(pxPerPage, canvas.height - srcY);
         const sliceCanvas = document.createElement("canvas");
         sliceCanvas.width = canvas.width;
         sliceCanvas.height = sliceH;
-        const ctx = sliceCanvas.getContext("2d");
-        ctx?.drawImage(canvas, 0, srcY, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+        const ctx = sliceCanvas.getContext("2d")!;
+        ctx.drawImage(canvas, 0, srcY, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
         const sliceImg = sliceCanvas.toDataURL("image/png");
-        const drawH = (sliceH / canvas.width) * imgWidth;
-        pdf.addImage(sliceImg, "PNG", 8, 8, imgWidth, drawH);
-        remainingHeight -= sliceH;
+        const drawH = (sliceH / canvas.width) * usableW;
+        if (page > 0) pdf.addPage();
+        pdf.addImage(sliceImg, "PNG", margin, margin, usableW, drawH);
         srcY += sliceH;
-        if (remainingHeight > 0) pdf.addPage();
+        page++;
       }
     }
     pdf.save("resultado-organizacional.pdf");
@@ -416,6 +436,10 @@ ${content}
           <Button onClick={handleSave} className="gap-2" size="sm">
             <Save className="h-4 w-4" />
             Salvar Avaliação
+          </Button>
+          <Button onClick={handlePrint} variant="outline" size="sm" className="gap-2">
+            <Printer className="h-4 w-4" />
+            Imprimir
           </Button>
           <Button onClick={handleExportHTML} variant="outline" size="sm" className="gap-2">
             <Download className="h-4 w-4" />
