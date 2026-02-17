@@ -39,11 +39,10 @@ function getCellColor(risk: number): string {
 }
 
 function getClassificacao(risk: number): string {
-  if (risk <= 3) return "Baixo";
-  if (risk <= 5) return "Baixo";
-  if (risk <= 10) return "Moderado";
-  if (risk <= 15) return "Alto";
-  return "Crítico";
+  if (risk >= 20) return "Crítico";
+  if (risk >= 12) return "Alto";
+  if (risk >= 6) return "Moderado";
+  return "Baixo";
 }
 
 export const AIHAMatrix = ({ data, onChange }: AIHAMatrixProps) => {

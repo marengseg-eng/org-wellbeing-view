@@ -209,12 +209,14 @@ ${content}
 
   const aiha = useMemo(() => {
     const avg = indiceGeral;
+    // Probabilidade alinhada com faixas do Índice Geral
     let prob = 1;
     if (avg > 80) prob = 5;
     else if (avg > 60) prob = 4;
     else if (avg > 40) prob = 3;
     else if (avg > 20) prob = 2;
 
+    // Severidade baseada no fator máximo
     const maxFactor = Math.max(...Object.values(factors));
     let sev = 1;
     if (maxFactor > 80) sev = 5;
@@ -223,11 +225,11 @@ ${content}
     else if (maxFactor > 20) sev = 2;
 
     const risk = prob * sev;
+    // Classificação de risco alinhada com o Índice Geral
     let classificacao = "Baixo";
-    if (risk > 20) classificacao = "Crítico";
-    else if (risk > 15) classificacao = "Alto";
-    else if (risk > 10) classificacao = "Moderado";
-    else if (risk > 5) classificacao = "Moderado";
+    if (risk >= 20) classificacao = "Crítico";
+    else if (risk >= 12) classificacao = "Alto";
+    else if (risk >= 6) classificacao = "Moderado";
 
     return { probabilidade: prob, severidade: sev, classificacao };
   }, [indiceGeral, factors]);
