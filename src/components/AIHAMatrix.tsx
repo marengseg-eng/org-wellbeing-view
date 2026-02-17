@@ -63,33 +63,33 @@ export const AIHAMatrix = ({ data, onChange }: AIHAMatrixProps) => {
   const risk = data.probabilidade && data.severidade ? data.probabilidade * data.severidade : 0;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Matrix grid */}
       <div className="overflow-x-auto">
-        <div className="min-w-[320px]">
+        <div className="max-w-[280px]">
           {/* Header: Severidade label */}
-          <div className="flex items-center justify-center mb-1">
-            <span className="text-xs font-semibold text-muted-foreground tracking-wide uppercase">
+          <div className="flex items-center justify-center mb-0.5">
+            <span className="text-[10px] font-semibold text-muted-foreground tracking-wide uppercase">
               Severidade →
             </span>
           </div>
           <div className="flex">
             {/* Y-axis label */}
-            <div className="flex flex-col items-center justify-center mr-1 w-6">
+            <div className="flex flex-col items-center justify-center mr-0.5 w-4">
               <span
-                className="text-xs font-semibold text-muted-foreground tracking-wide uppercase"
+                className="text-[10px] font-semibold text-muted-foreground tracking-wide uppercase"
                 style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
               >
-                Probabilidade →
+                Prob →
               </span>
             </div>
 
             <div className="flex-1">
               {/* Column headers */}
-              <div className="grid grid-cols-[40px_repeat(5,1fr)] gap-0.5 mb-0.5">
+              <div className="grid grid-cols-[28px_repeat(5,1fr)] gap-px mb-px">
                 <div /> {/* empty corner */}
                 {sevLabels.map((s) => (
-                  <div key={s} className="text-center text-xs font-bold text-muted-foreground py-1">
+                  <div key={s} className="text-center text-[10px] font-bold text-muted-foreground py-0.5">
                     {s}
                   </div>
                 ))}
@@ -99,9 +99,9 @@ export const AIHAMatrix = ({ data, onChange }: AIHAMatrixProps) => {
               {[...probLabels].reverse().map((pLabel) => {
                 const p = Number(pLabel);
                 return (
-                  <div key={p} className="grid grid-cols-[40px_repeat(5,1fr)] gap-0.5 mb-0.5">
+                  <div key={p} className="grid grid-cols-[28px_repeat(5,1fr)] gap-px mb-px">
                     {/* Row label */}
-                    <div className="flex items-center justify-center text-xs font-bold text-muted-foreground">
+                    <div className="flex items-center justify-center text-[10px] font-bold text-muted-foreground">
                       {p}
                     </div>
                     {sevLabels.map((sLabel) => {
@@ -114,9 +114,9 @@ export const AIHAMatrix = ({ data, onChange }: AIHAMatrixProps) => {
                           type="button"
                           onClick={() => handleCellClick(p, s)}
                           className={cn(
-                            "relative aspect-square rounded-md flex items-center justify-center text-xs font-bold text-white transition-all cursor-pointer hover:scale-105 hover:shadow-md",
+                            "relative aspect-square rounded flex items-center justify-center text-[10px] font-bold text-white transition-all cursor-pointer hover:scale-105",
                             getCellColor(cellRisk),
-                            isSelected && "ring-2 ring-foreground ring-offset-2 scale-110 shadow-lg z-10"
+                            isSelected && "ring-2 ring-foreground ring-offset-1 scale-110 shadow-md z-10"
                           )}
                           title={`P=${p} × S=${s} = ${cellRisk}`}
                         >
