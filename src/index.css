@@ -116,3 +116,20 @@
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 }
+
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 8mm;
+  }
+  body {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  .print\:hidden {
+    display: none !important;
+  }
+  * {
+    overflow: visible !important;
+  }
+}
