@@ -341,32 +341,29 @@ ${content}
           </div>
         </div>
 
-        {/* Bottom: AIHA left, Conclusion right */}
-        <div className="grid grid-cols-2 gap-6">
-          {/* AIHA */}
-          <div>
-            <h3 className="text-sm font-semibold text-foreground mb-2">
-              Matriz AIHA — Avaliação de Risco
-            </h3>
-            <div className="border rounded-lg p-4 bg-white">
-              <AIHAMatrix data={aiha} onChange={setAiha} />
-            </div>
+        {/* AIHA Matrix */}
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-foreground mb-2">
+            Matriz AIHA — Avaliação de Risco
+          </h3>
+          <div className="border rounded-lg p-4 bg-white">
+            <AIHAMatrix data={aiha} onChange={setAiha} />
           </div>
+        </div>
 
-          {/* Conclusion */}
-          <div>
-            <h3 className="text-sm font-semibold text-foreground mb-2">
-              Conclusão Executiva
-            </h3>
-            <div className="border rounded-lg p-4 bg-white h-full">
-              <Textarea
-                value={conclusao}
-                onChange={(e) => setConclusao(e.target.value)}
-                placeholder="Resumo executivo da avaliação (máximo 3 linhas)..."
-                className="border-0 p-0 resize-none text-sm bg-white focus-visible:ring-0 min-h-[100px]"
-                maxLength={300}
-              />
-            </div>
+        {/* Conclusion */}
+        <div>
+          <h3 className="text-sm font-semibold text-foreground mb-2">
+            Conclusão Executiva
+          </h3>
+          <div className="border rounded-lg p-4 bg-white">
+            <Textarea
+              value={conclusao}
+              onChange={(e) => setConclusao(e.target.value)}
+              placeholder="Resumo executivo da avaliação (máximo 3 linhas)..."
+              className="border-0 p-0 resize-none text-sm bg-white focus-visible:ring-0 min-h-[100px]"
+              maxLength={300}
+            />
           </div>
         </div>
       </div>
