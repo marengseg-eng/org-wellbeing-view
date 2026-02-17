@@ -56,6 +56,11 @@
     --dashboard-surface: 220 15% 96%;
     --dashboard-highlight: 222 60% 18%;
 
+    /* Brand colors */
+    --brand-primary: 21 100% 45%;
+    --brand-secondary: 0 0% 40%;
+    --brand-dark: 222 47% 11%;
+
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
