@@ -408,40 +408,37 @@ ${content}
           </div>
         </div>
 
-        {/* ===== PAGE 2: Chart ===== */}
+        {/* ===== PAGE 2: Chart + AIHA Matrix + Conclusion ===== */}
         <div className="print-page px-8 py-6 flex flex-col">
-          <h3 className="text-lg font-semibold text-foreground mb-3">
-            Distribuição dos Fatores Psicossociais
-          </h3>
-          <div className="border rounded-lg p-4 bg-white flex-1 flex items-center">
-            <div className="w-full">
+          <div className="mb-4">
+            <h3 className="text-sm font-bold text-foreground mb-2">
+              Distribuição dos Fatores Psicossociais
+            </h3>
+            <div className="border rounded-lg p-3 bg-white">
               <FactorChart factors={chartData} />
             </div>
           </div>
-        </div>
 
-        {/* ===== PAGE 3: AIHA Matrix + Conclusion ===== */}
-        <div className="print-page px-8 py-6 flex flex-col">
-          <div className="grid grid-cols-2 gap-6 flex-1">
+          <div className="grid grid-cols-2 gap-4 flex-1">
             <div className="flex flex-col">
-              <h3 className="text-lg font-semibold text-foreground mb-3">
+              <h3 className="text-sm font-bold text-foreground mb-2">
                 Matriz AIHA — Avaliação de Risco
               </h3>
-              <div className="border rounded-lg p-4 bg-white flex-1 flex items-center justify-center">
+              <div className="border rounded-lg p-3 bg-white flex-1 flex items-center justify-center">
                 <AIHAMatrix data={aiha} />
               </div>
             </div>
 
             <div className="flex flex-col">
-              <h3 className="text-lg font-semibold text-foreground mb-3">
+              <h3 className="text-sm font-bold text-foreground mb-2">
                 Conclusão Executiva
               </h3>
-              <div className="border rounded-lg p-4 bg-white flex-1">
+              <div className="border rounded-lg p-3 bg-white flex-1">
                 <Textarea
                   value={conclusao}
                   onChange={(e) => setConclusao(e.target.value)}
                   placeholder="Resumo executivo da avaliação..."
-                  className="border-0 p-0 resize-none text-sm bg-white focus-visible:ring-0 h-full min-h-[200px]"
+                  className="border-0 p-0 resize-none text-sm bg-white focus-visible:ring-0 h-full min-h-[150px]"
                   maxLength={500}
                 />
               </div>
