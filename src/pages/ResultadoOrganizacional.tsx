@@ -12,10 +12,11 @@ import {
 import { StatusBadge } from "@/components/StatusBadge";
 import { FactorChart } from "@/components/FactorChart";
 import { AIHAMatrix } from "@/components/AIHAMatrix";
-import { Download } from "lucide-react";
+import { Download, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
@@ -139,6 +140,38 @@ ${content}
   });
   const [classificacaoTecnica, setClassificacaoTecnica] = useState<ClassificacaoGeral>("");
 
+  const handleSave = useCallback(() => {
+    if (!empresa.trim()) {
+      toast.error("Preencha o nome da empresa antes de salvar.");
+      return;
+    }
+    const key = `avaliacao_${empresa.trim().toLowerCase().replace(/\s+/g, "_")}`;
+    const payload = {
+      empresa, setor, dataAvaliacao, numEntrevistados, factors, classificacaoTecnica, conclusao,
+      savedAt: new Date().toISOString(),
+    };
+    localStorage.setItem(key, JSON.stringify(payload));
+    toast.success(`Avaliação salva para "${empresa}".`);
+  }, [empresa, setor, dataAvaliacao, numEntrevistados, factors, classificacaoTecnica, conclusao]);
+
+  const handleLoadEmpresa = useCallback(() => {
+    if (!empresa.trim()) return;
+    const key = `avaliacao_${empresa.trim().toLowerCase().replace(/\s+/g, "_")}`;
+    const saved = localStorage.getItem(key);
+    if (saved) {
+      try {
+        const d = JSON.parse(saved);
+        setSetor(d.setor || "");
+        setDataAvaliacao(d.dataAvaliacao || "");
+        setNumEntrevistados(d.numEntrevistados ?? "");
+        setFactors(d.factors || { carga: 0, jornada: 0, autonomia: 0, exigencias: 0, comunicacao: 0 });
+        setClassificacaoTecnica(d.classificacaoTecnica || "");
+        setConclusao(d.conclusao || "");
+        toast.info(`Avaliação carregada para "${empresa}".`);
+      } catch { /* ignore */ }
+    }
+  }, [empresa]);
+
   const indiceGeral = useMemo(() => {
     const values = Object.values(factors);
     const sum = values.reduce((a, b) => a + b, 0);
@@ -183,21 +216,9 @@ ${content}
   }));
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Export button - hidden on print/PDF */}
-      <div className="print:hidden fixed top-4 right-4 z-50 flex gap-2">
-        <Button onClick={handleExportHTML} variant="outline" size="sm" className="gap-2 bg-white shadow-sm">
-          <Download className="h-4 w-4" />
-          Exportar HTML
-        </Button>
-        <Button onClick={handleExportPDF} variant="outline" size="sm" className="gap-2 bg-white shadow-sm">
-          <Download className="h-4 w-4" />
-          Exportar PDF
-        </Button>
-      </div>
-
+    <div className="min-h-screen bg-white flex flex-col">
       {/* Report content */}
-      <div ref={reportRef} className="w-full bg-white px-8 py-6" style={{ maxWidth: "1400px", margin: "0 auto" }}>
+      <div ref={reportRef} className="w-full bg-white px-8 py-6 flex-1" style={{ maxWidth: "1400px", margin: "0 auto" }}>
         {/* Title */}
         <div className="text-center mb-1">
           <h1 className="text-2xl font-bold tracking-tight text-foreground uppercase">
@@ -218,6 +239,7 @@ ${content}
                 <Input
                   value={empresa}
                   onChange={(e) => setEmpresa(e.target.value)}
+                  onBlur={handleLoadEmpresa}
                   className="h-8 text-sm bg-white border-border"
                   placeholder="Nome da empresa"
                 />
@@ -385,6 +407,24 @@ ${content}
               maxLength={300}
             />
           </div>
+        </div>
+      </div>
+
+      {/* Action bar - fixed bottom */}
+      <div className="print:hidden sticky bottom-0 w-full border-t bg-background/95 backdrop-blur py-3 z-50">
+        <div className="flex items-center justify-center gap-3 px-8" style={{ maxWidth: "1400px", margin: "0 auto" }}>
+          <Button onClick={handleSave} className="gap-2" size="sm">
+            <Save className="h-4 w-4" />
+            Salvar Avaliação
+          </Button>
+          <Button onClick={handleExportHTML} variant="outline" size="sm" className="gap-2">
+            <Download className="h-4 w-4" />
+            Exportar HTML
+          </Button>
+          <Button onClick={handleExportPDF} variant="outline" size="sm" className="gap-2">
+            <Download className="h-4 w-4" />
+            Exportar PDF
+          </Button>
         </div>
       </div>
     </div>
