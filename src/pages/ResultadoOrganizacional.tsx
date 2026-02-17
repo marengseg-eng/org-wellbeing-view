@@ -209,37 +209,31 @@ ${content}
 
   const aiha = useMemo(() => {
     const avg = indiceGeral;
-    const maxFactor = Math.max(...Object.values(factors));
 
-    // Probabilidade baseada no índice geral (média da distribuição)
-    let prob = 1;
-    if (avg > 80) prob = 5;
-    else if (avg > 60) prob = 4;
-    else if (avg > 40) prob = 3;
-    else if (avg > 20) prob = 2;
+    // P e S derivados do mesmo índice geral para garantir alinhamento
+    // ≤20% → 1, 21-40% → 2, 41-60% → 3, 61-80% → 4, >80% → 5
+    let level = 1;
+    if (avg > 80) level = 5;
+    else if (avg > 60) level = 4;
+    else if (avg > 40) level = 3;
+    else if (avg > 20) level = 2;
 
-    // Severidade baseada no fator máximo da distribuição
-    let sev = 1;
-    if (maxFactor > 80) sev = 5;
-    else if (maxFactor > 60) sev = 4;
-    else if (maxFactor > 40) sev = 3;
-    else if (maxFactor > 20) sev = 2;
-
+    const prob = level;
+    const sev = level;
     const risk = prob * sev;
 
-    // Classificação AIHA alinhada com os mesmos termos do Índice Geral
-    // Usa a classificação do próprio índice como referência principal
+    // Classificação alinhada: risk 1-4=Conforme, 9=Atenção, 16-25=Crítico
     let classificacao: string;
-    if (avg <= 40) {
+    if (risk <= 4) {
       classificacao = "Conforme";
-    } else if (avg <= 60) {
+    } else if (risk <= 9) {
       classificacao = "Atenção";
     } else {
       classificacao = "Crítico";
     }
 
     return { probabilidade: prob, severidade: sev, classificacao };
-  }, [indiceGeral, factors]);
+  }, [indiceGeral]);
 
   const chartData = FACTORS.map((f) => ({
     name: f.label,
