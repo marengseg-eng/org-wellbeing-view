@@ -300,8 +300,8 @@ ${content}
           <div className="grid grid-cols-3 gap-6 flex-1">
             {/* Left: Identification */}
             <div className="col-span-2 flex flex-col">
-              <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-                <div className="space-y-1">
+              <div className="grid grid-cols-3 gap-x-6 gap-y-4">
+                <div className="col-span-2 space-y-1">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                     Empresa
                   </Label>
@@ -377,7 +377,7 @@ ${content}
                 <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
                   Fatores Psicossociais (%)
                 </h3>
-                <div className="grid grid-cols-5 gap-3">
+                <div className="grid grid-cols-3 gap-x-4 gap-y-3 lg:grid-cols-5">
                   {FACTORS.map((f) => (
                     <div key={f.key} className="space-y-1">
                       <Label className="text-[10px] leading-tight text-muted-foreground line-clamp-2">
