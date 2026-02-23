@@ -155,6 +155,22 @@ ${content}
   const [setor, setSetor] = useState("");
   const [dataAvaliacao, setDataAvaliacao] = useState("");
   const [conclusao, setConclusao] = useState("");
+  const [recomendacoes, setRecomendacoes] = useState<string[]>([""]);
+
+  const formatCnpj = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 14);
+    return digits
+      .replace(/^(\d{2})(\d)/, "$1.$2")
+      .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
+      .replace(/\.(\d{3})(\d)/, ".$1/$2")
+      .replace(/(\d{4})(\d)/, "$1-$2");
+  };
+
+  const addRecomendacao = () => setRecomendacoes((prev) => [...prev, ""]);
+  const removeRecomendacao = (index: number) =>
+    setRecomendacoes((prev) => prev.filter((_, i) => i !== index));
+  const updateRecomendacao = (index: number, value: string) =>
+    setRecomendacoes((prev) => prev.map((r, i) => (i === index ? value : r)));
   const [factors, setFactors] = useState<Record<FactorKey, number>>({
     carga: 0,
     jornada: 0,
@@ -303,9 +319,10 @@ ${content}
                   </Label>
                   <Input
                     value={cnpj}
-                    onChange={(e) => setCnpj(e.target.value)}
+                    onChange={(e) => setCnpj(formatCnpj(e.target.value))}
                     className="h-9 text-sm bg-white border-border"
                     placeholder="00.000.000/0000-00"
+                    maxLength={18}
                   />
                 </div>
                 <div className="space-y-1">
@@ -459,18 +476,64 @@ ${content}
               </div>
             </div>
 
-            <div className="flex flex-col">
-              <h3 className="text-sm font-bold text-foreground mb-2">
-                Conclusão Executiva
-              </h3>
-              <div className="border rounded-lg p-3 bg-white flex-1">
-                <Textarea
-                  value={conclusao}
-                  onChange={(e) => setConclusao(e.target.value)}
-                  placeholder="Resumo executivo da avaliação..."
-                  className="border-0 p-0 resize-none text-sm bg-white focus-visible:ring-0 h-full min-h-[150px]"
-                  maxLength={500}
-                />
+            <div className="flex flex-col gap-4">
+              <div>
+                <h3 className="text-sm font-bold text-foreground mb-2">
+                  Conclusão Executiva
+                </h3>
+                <div className="border rounded-lg p-3 bg-white">
+                  <Textarea
+                    value={conclusao}
+                    onChange={(e) => setConclusao(e.target.value)}
+                    placeholder="Resumo executivo da avaliação psicossocial organizacional..."
+                    className="border-0 p-0 resize-none text-sm bg-white focus-visible:ring-0 min-h-[180px]"
+                    maxLength={2000}
+                  />
+                  <p className="text-[10px] text-muted-foreground text-right mt-1">
+                    {conclusao.length}/2000
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-bold text-foreground">
+                    Recomendações
+                  </h3>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addRecomendacao}
+                    className="print:hidden h-7 text-xs gap-1"
+                  >
+                    + Item
+                  </Button>
+                </div>
+                <div className="border rounded-lg p-3 bg-white space-y-2">
+                  {recomendacoes.map((rec, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <span className="text-xs font-bold text-muted-foreground mt-2 min-w-[20px]">
+                        {i + 1}.
+                      </span>
+                      <Input
+                        value={rec}
+                        onChange={(e) => updateRecomendacao(i, e.target.value)}
+                        placeholder={`Recomendação ${i + 1}...`}
+                        className="h-8 text-sm bg-white border-border flex-1"
+                      />
+                      {recomendacoes.length > 1 && (
+                        <button
+                          onClick={() => removeRecomendacao(i)}
+                          className="print:hidden text-muted-foreground hover:text-destructive mt-1.5"
+                          title="Remover"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
