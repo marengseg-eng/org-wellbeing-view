@@ -339,23 +339,67 @@ const ResultadoOrganizacional = () => {
       </tr>`;
     }).join("\n");
 
-    // AIHA Matrix as HTML table
+    // AIHA Matrix as HTML table - full 5x5 grid
     const aihaColor = statusColor(aiha.classificacao);
     const risk = aiha.probabilidade * aiha.severidade;
+
+    const getCellBg = (r: number) => {
+      if (r <= 3) return "#2d8a4e";
+      if (r <= 5) return "#6fbf50";
+      if (r <= 10) return "#e6b422";
+      if (r <= 15) return "#e07830";
+      if (r <= 20) return "#cc3333";
+      return "#991b1b";
+    };
+
+    // Build 5x5 matrix rows (prob 5 at top, 1 at bottom)
+    let matrixRows = "";
+    for (let p = 5; p >= 1; p--) {
+      let cells = `<td style="width:36px;text-align:center;font-weight:700;font-size:12px;color:#64748b;padding:4px;">${p}</td>`;
+      for (let s = 1; s <= 5; s++) {
+        const cr = p * s;
+        const isSelected = aiha.probabilidade === p && aiha.severidade === s;
+        const border = isSelected ? "3px solid #1e293b" : "1px solid rgba(255,255,255,0.3)";
+        const transform = isSelected ? "font-size:14px;font-weight:900;" : "font-size:11px;font-weight:700;";
+        cells += `<td style="background:${getCellBg(cr)};color:#fff;text-align:center;padding:8px 4px;border-radius:4px;border:${border};${transform}">${cr}</td>`;
+      }
+      matrixRows += `<tr>${cells}</tr>`;
+    }
+
     const aihaTableHtml = `
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:12px;">
-        <div style="text-align:center;background:#f8fafc;padding:16px;border-radius:8px;border:1px solid #e2e8f0;">
-          <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:0.5px;">Probabilidade</div>
-          <div style="font-size:32px;font-weight:800;color:${aihaColor};margin-top:4px;">${aiha.probabilidade}</div>
+      <div style="display:flex;gap:32px;align-items:flex-start;margin-top:12px;flex-wrap:wrap;">
+        <div>
+          <div style="text-align:center;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Severidade →</div>
+          <table style="border-collapse:separate;border-spacing:3px;">
+            <thead>
+              <tr>
+                <th style="width:36px;font-size:10px;color:#64748b;writing-mode:vertical-rl;transform:rotate(180deg);padding:4px;">Prob →</th>
+                <th style="text-align:center;font-size:11px;font-weight:700;color:#64748b;padding:4px;">1</th>
+                <th style="text-align:center;font-size:11px;font-weight:700;color:#64748b;padding:4px;">2</th>
+                <th style="text-align:center;font-size:11px;font-weight:700;color:#64748b;padding:4px;">3</th>
+                <th style="text-align:center;font-size:11px;font-weight:700;color:#64748b;padding:4px;">4</th>
+                <th style="text-align:center;font-size:11px;font-weight:700;color:#64748b;padding:4px;">5</th>
+              </tr>
+            </thead>
+            <tbody>${matrixRows}</tbody>
+          </table>
         </div>
-        <div style="text-align:center;background:#f8fafc;padding:16px;border-radius:8px;border:1px solid #e2e8f0;">
-          <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:0.5px;">Severidade</div>
-          <div style="font-size:32px;font-weight:800;color:${aihaColor};margin-top:4px;">${aiha.severidade}</div>
-        </div>
-        <div style="text-align:center;background:#f8fafc;padding:16px;border-radius:8px;border:1px solid #e2e8f0;">
-          <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:0.5px;">Risco (P×S)</div>
-          <div style="font-size:32px;font-weight:800;color:${aihaColor};margin-top:4px;">${risk}</div>
-          <div style="display:inline-block;padding:3px 12px;border-radius:20px;font-size:11px;font-weight:700;color:#fff;background:${aihaColor};margin-top:6px;">${aiha.classificacao}</div>
+        <div style="display:flex;flex-direction:column;gap:12px;min-width:200px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+            <div style="text-align:center;background:#f8fafc;padding:14px 8px;border-radius:8px;border:1px solid #e2e8f0;">
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#64748b;">Probabilidade</div>
+              <div style="font-size:28px;font-weight:800;color:${aihaColor};margin-top:2px;">${aiha.probabilidade}</div>
+            </div>
+            <div style="text-align:center;background:#f8fafc;padding:14px 8px;border-radius:8px;border:1px solid #e2e8f0;">
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#64748b;">Severidade</div>
+              <div style="font-size:28px;font-weight:800;color:${aihaColor};margin-top:2px;">${aiha.severidade}</div>
+            </div>
+            <div style="text-align:center;background:#f8fafc;padding:14px 8px;border-radius:8px;border:1px solid #e2e8f0;">
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#64748b;">Risco (P×S)</div>
+              <div style="font-size:28px;font-weight:800;color:${aihaColor};margin-top:2px;">${risk}</div>
+              <div style="display:inline-block;padding:3px 12px;border-radius:20px;font-size:11px;font-weight:700;color:#fff;background:${aihaColor};margin-top:4px;">${aiha.classificacao}</div>
+            </div>
+          </div>
         </div>
       </div>`;
 
