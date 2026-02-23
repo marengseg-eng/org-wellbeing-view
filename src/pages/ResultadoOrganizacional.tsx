@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useCallback } from "react";
+import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import logoLbm from "@/assets/logo-lbm.jpg";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@ import {
 import { StatusBadge } from "@/components/StatusBadge";
 import { FactorChart } from "@/components/FactorChart";
 import { AIHAMatrix } from "@/components/AIHAMatrix";
-import { Download, Save, Printer, ImagePlus, X } from "lucide-react";
+import { Download, Save, Printer, X, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
@@ -50,104 +50,25 @@ const getClassificacaoAutomatica = (value: number): ClassificacaoGeral => {
   return "Crítico";
 };
 
+const STORAGE_PREFIX = "avaliacao_";
+
+const getSavedEmpresas = (): string[] => {
+  const empresas: string[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key?.startsWith(STORAGE_PREFIX)) {
+      try {
+        const d = JSON.parse(localStorage.getItem(key) || "");
+        if (d.empresa) empresas.push(d.empresa);
+      } catch { /* ignore */ }
+    }
+  }
+  return empresas.sort();
+};
+
 const ResultadoOrganizacional = () => {
   const reportRef = useRef<HTMLDivElement>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
-  const logoInputRef = useRef<HTMLInputElement>(null);
-
-  const handlePrint = useCallback(() => {
-    window.print();
-  }, []);
-
-  const handleExportPDF = useCallback(async () => {
-    if (!reportRef.current) return;
-    const el = reportRef.current;
-    // Temporarily expand to full width for capture
-    const origMaxW = el.style.maxWidth;
-    const origMargin = el.style.margin;
-    el.style.maxWidth = "none";
-    el.style.margin = "0";
-
-    const canvas = await html2canvas(el, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: "#ffffff",
-      windowWidth: 1400,
-      scrollY: -window.scrollY,
-    });
-
-    el.style.maxWidth = origMaxW;
-    el.style.margin = origMargin;
-
-    const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 8;
-    const usableW = pageWidth - margin * 2;
-    const usableH = pageHeight - margin * 2;
-    const imgRatio = canvas.height / canvas.width;
-    const totalImgH = usableW * imgRatio;
-
-    if (totalImgH <= usableH) {
-      const imgData = canvas.toDataURL("image/png");
-      pdf.addImage(imgData, "PNG", margin, margin, usableW, totalImgH);
-    } else {
-      // Multi-page: slice source canvas per page
-      const pxPerPage = (usableH / totalImgH) * canvas.height;
-      let srcY = 0;
-      let page = 0;
-      while (srcY < canvas.height - 1) {
-        const sliceH = Math.min(pxPerPage, canvas.height - srcY);
-        const sliceCanvas = document.createElement("canvas");
-        sliceCanvas.width = canvas.width;
-        sliceCanvas.height = sliceH;
-        const ctx = sliceCanvas.getContext("2d")!;
-        ctx.drawImage(canvas, 0, srcY, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
-        const sliceImg = sliceCanvas.toDataURL("image/png");
-        const drawH = (sliceH / canvas.width) * usableW;
-        if (page > 0) pdf.addPage();
-        pdf.addImage(sliceImg, "PNG", margin, margin, usableW, drawH);
-        srcY += sliceH;
-        page++;
-      }
-    }
-    pdf.save("resultado-organizacional.pdf");
-  }, []);
-
-  const handleExportHTML = useCallback(() => {
-    if (!reportRef.current) return;
-    const content = reportRef.current.innerHTML;
-    const htmlString = `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Avaliação Psicossocial Organizacional</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #fff; color: #1e293b; }
-  .report { max-width: 1400px; margin: 0 auto; padding: 32px; }
-  input, select, textarea { border: 1px solid #ddd; border-radius: 6px; padding: 4px 8px; font-size: 14px; background: #fff; }
-  @media print {
-    @page { size: A4 landscape; margin: 10mm; }
-    body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-  }
-</style>
-</head>
-<body>
-<div class="report">
-${content}
-</div>
-</body>
-</html>`;
-    const blob = new Blob([htmlString], { type: "text/html;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "resultado-organizacional.html";
-    a.click();
-    URL.revokeObjectURL(url);
-  }, []);
 
   const [numEntrevistados, setNumEntrevistados] = useState<number | "">("");
   const [empresa, setEmpresa] = useState("");
@@ -156,6 +77,36 @@ ${content}
   const [dataAvaliacao, setDataAvaliacao] = useState("");
   const [conclusao, setConclusao] = useState("");
   const [recomendacoes, setRecomendacoes] = useState<string[]>([""]);
+  const [factors, setFactors] = useState<Record<FactorKey, number>>({
+    carga: 0, jornada: 0, autonomia: 0, exigencias: 0, comunicacao: 0,
+  });
+  const [classificacaoTecnica, setClassificacaoTecnica] = useState<ClassificacaoGeral>("");
+
+  // Empresa search
+  const [savedEmpresas, setSavedEmpresas] = useState<string[]>([]);
+  const [showEmpresaList, setShowEmpresaList] = useState(false);
+  const empresaInputRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setSavedEmpresas(getSavedEmpresas());
+  }, []);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (empresaInputRef.current && !empresaInputRef.current.contains(e.target as Node)) {
+        setShowEmpresaList(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const filteredEmpresas = useMemo(() => {
+    if (!empresa.trim()) return savedEmpresas;
+    const q = empresa.toLowerCase();
+    return savedEmpresas.filter((e) => e.toLowerCase().includes(q));
+  }, [empresa, savedEmpresas]);
 
   const formatCnpj = (value: string) => {
     const digits = value.replace(/\D/g, "").slice(0, 14);
@@ -171,36 +122,14 @@ ${content}
     setRecomendacoes((prev) => prev.filter((_, i) => i !== index));
   const updateRecomendacao = (index: number, value: string) =>
     setRecomendacoes((prev) => prev.map((r, i) => (i === index ? value : r)));
-  const [factors, setFactors] = useState<Record<FactorKey, number>>({
-    carga: 0,
-    jornada: 0,
-    autonomia: 0,
-    exigencias: 0,
-    comunicacao: 0,
-  });
-  const [classificacaoTecnica, setClassificacaoTecnica] = useState<ClassificacaoGeral>("");
 
-  const handleSave = useCallback(() => {
-    if (!empresa.trim()) {
-      toast.error("Preencha o nome da empresa antes de salvar.");
-      return;
-    }
-    const key = `avaliacao_${empresa.trim().toLowerCase().replace(/\s+/g, "_")}`;
-    const payload = {
-      empresa, cnpj, setor, dataAvaliacao, numEntrevistados, factors, classificacaoTecnica, conclusao,
-      savedAt: new Date().toISOString(),
-    };
-    localStorage.setItem(key, JSON.stringify(payload));
-    toast.success(`Avaliação salva para "${empresa}".`);
-  }, [empresa, cnpj, setor, dataAvaliacao, numEntrevistados, factors, classificacaoTecnica, conclusao]);
-
-  const handleLoadEmpresa = useCallback(() => {
-    if (!empresa.trim()) return;
-    const key = `avaliacao_${empresa.trim().toLowerCase().replace(/\s+/g, "_")}`;
+  const loadEmpresa = useCallback((name: string) => {
+    const key = `${STORAGE_PREFIX}${name.trim().toLowerCase().replace(/\s+/g, "_")}`;
     const saved = localStorage.getItem(key);
     if (saved) {
       try {
         const d = JSON.parse(saved);
+        setEmpresa(d.empresa || name);
         setCnpj(d.cnpj || "");
         setSetor(d.setor || "");
         setDataAvaliacao(d.dataAvaliacao || "");
@@ -208,10 +137,12 @@ ${content}
         setFactors(d.factors || { carga: 0, jornada: 0, autonomia: 0, exigencias: 0, comunicacao: 0 });
         setClassificacaoTecnica(d.classificacaoTecnica || "");
         setConclusao(d.conclusao || "");
-        toast.info(`Avaliação carregada para "${empresa}".`);
+        setRecomendacoes(d.recomendacoes || [""]);
+        toast.info(`Avaliação carregada para "${d.empresa || name}".`);
       } catch { /* ignore */ }
     }
-  }, [empresa]);
+    setShowEmpresaList(false);
+  }, []);
 
   const indiceGeral = useMemo(() => {
     const values = Object.values(factors);
@@ -228,29 +159,18 @@ ${content}
 
   const aiha = useMemo(() => {
     const avg = indiceGeral;
-
-    // P e S derivados do mesmo índice geral para garantir alinhamento
-    // ≤20% → 1, 21-40% → 2, 41-60% → 3, 61-80% → 4, >80% → 5
     let level = 1;
     if (avg > 80) level = 5;
     else if (avg > 60) level = 4;
     else if (avg > 40) level = 3;
     else if (avg > 20) level = 2;
-
     const prob = level;
     const sev = level;
     const risk = prob * sev;
-
-    // Classificação alinhada: risk 1-4=Conforme, 9=Atenção, 16-25=Crítico
     let classificacao: string;
-    if (risk <= 4) {
-      classificacao = "Conforme";
-    } else if (risk <= 9) {
-      classificacao = "Atenção";
-    } else {
-      classificacao = "Crítico";
-    }
-
+    if (risk <= 4) classificacao = "Conforme";
+    else if (risk <= 9) classificacao = "Atenção";
+    else classificacao = "Crítico";
     return { probabilidade: prob, severidade: sev, classificacao };
   }, [indiceGeral]);
 
@@ -259,6 +179,198 @@ ${content}
     value: factors[f.key],
   }));
 
+  const handleSave = useCallback(() => {
+    if (!empresa.trim()) {
+      toast.error("Preencha o nome da empresa antes de salvar.");
+      return;
+    }
+    const key = `${STORAGE_PREFIX}${empresa.trim().toLowerCase().replace(/\s+/g, "_")}`;
+    const payload = {
+      empresa, cnpj, setor, dataAvaliacao, numEntrevistados, factors,
+      classificacaoTecnica, conclusao, recomendacoes,
+      savedAt: new Date().toISOString(),
+    };
+    localStorage.setItem(key, JSON.stringify(payload));
+    setSavedEmpresas(getSavedEmpresas());
+    toast.success(`Avaliação salva para "${empresa}".`);
+  }, [empresa, cnpj, setor, dataAvaliacao, numEntrevistados, factors, classificacaoTecnica, conclusao, recomendacoes]);
+
+  const handlePrint = useCallback(() => { window.print(); }, []);
+
+  const handleExportPDF = useCallback(async () => {
+    if (!reportRef.current) return;
+    const el = reportRef.current;
+    const origMaxW = el.style.maxWidth;
+    const origMargin = el.style.margin;
+    el.style.maxWidth = "none";
+    el.style.margin = "0";
+
+    // Force all content visible - expand textareas
+    const textareas = el.querySelectorAll("textarea");
+    const origHeights: string[] = [];
+    textareas.forEach((ta) => {
+      origHeights.push(ta.style.height);
+      ta.style.height = ta.scrollHeight + "px";
+    });
+
+    const canvas = await html2canvas(el, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff",
+      windowWidth: 1200,
+      scrollY: -window.scrollY,
+    });
+
+    // Restore
+    textareas.forEach((ta, i) => { ta.style.height = origHeights[i]; });
+    el.style.maxWidth = origMaxW;
+    el.style.margin = origMargin;
+
+    const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 6;
+    const usableW = pageWidth - margin * 2;
+    const usableH = pageHeight - margin * 2;
+    const imgRatio = canvas.height / canvas.width;
+    const totalImgH = usableW * imgRatio;
+
+    if (totalImgH <= usableH) {
+      pdf.addImage(canvas.toDataURL("image/png"), "PNG", margin, margin, usableW, totalImgH);
+    } else {
+      const pxPerPage = (usableH / totalImgH) * canvas.height;
+      let srcY = 0;
+      let page = 0;
+      while (srcY < canvas.height - 1) {
+        const sliceH = Math.min(pxPerPage, canvas.height - srcY);
+        const sliceCanvas = document.createElement("canvas");
+        sliceCanvas.width = canvas.width;
+        sliceCanvas.height = sliceH;
+        const ctx = sliceCanvas.getContext("2d")!;
+        ctx.drawImage(canvas, 0, srcY, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+        const drawH = (sliceH / canvas.width) * usableW;
+        if (page > 0) pdf.addPage();
+        pdf.addImage(sliceCanvas.toDataURL("image/png"), "PNG", margin, margin, usableW, drawH);
+        srcY += sliceH;
+        page++;
+      }
+    }
+    pdf.save(`avaliacao-${empresa || "organizacional"}.pdf`);
+  }, [empresa]);
+
+  const handleExportHTML = useCallback(() => {
+    const statusColor = (s: string) => {
+      if (s === "Conforme") return "#22c55e";
+      if (s === "Atenção") return "#f59e0b";
+      return "#ef4444";
+    };
+
+    const factorRows = FACTORS.map((f) => {
+      const v = factors[f.key];
+      const color = v <= 30 ? "#22c55e" : v <= 60 ? "#f59e0b" : "#ef4444";
+      return `<tr><td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;font-size:14px;">${f.label}</td><td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;font-weight:bold;color:${color};text-align:center;">${v}%</td></tr>`;
+    }).join("\n");
+
+    const recsHtml = recomendacoes
+      .filter((r) => r.trim())
+      .map((r, i) => `<li style="margin-bottom:6px;font-size:14px;color:#334155;">${r}</li>`)
+      .join("\n");
+
+    const htmlString = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Avaliação Psicossocial — ${empresa || "Organizacional"}</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #fff; color: #1e293b; }
+  .page { max-width: 900px; margin: 0 auto; padding: 40px 32px; }
+  .header { background: #1e293b; padding: 24px 32px; display: flex; align-items: center; justify-content: space-between; border-radius: 8px 8px 0 0; }
+  .header h1 { color: #fff; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; text-align: right; line-height: 1.3; }
+  .header p { color: rgba(255,255,255,0.5); font-size: 11px; margin-top: 4px; }
+  .accent-bar { height: 4px; background: #1e4a7a; border-radius: 0 0 0 0; }
+  .section { margin-top: 24px; }
+  .section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; }
+  .field label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px; }
+  .field .value { font-size: 15px; font-weight: 500; color: #1e293b; margin-top: 2px; padding: 6px 0; border-bottom: 1px solid #e2e8f0; }
+  .index-box { text-align: center; padding: 28px 20px; border: 2px solid ${statusColor(classificacaoEfetiva)}; border-radius: 12px; margin-top: 16px; }
+  .index-value { font-size: 56px; font-weight: 800; color: ${statusColor(classificacaoEfetiva)}; }
+  .badge { display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; color: #fff; background: ${statusColor(classificacaoEfetiva)}; margin-top: 8px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  table th { text-align: left; padding: 8px 12px; background: #f1f5f9; font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+  .conclusao { background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 14px; line-height: 1.6; color: #334155; white-space: pre-wrap; margin-top: 8px; min-height: 60px; }
+  ol { padding-left: 20px; margin-top: 8px; }
+  @media print {
+    @page { size: A4 portrait; margin: 15mm; }
+    body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div>
+      <span style="color:rgba(255,255,255,0.6);font-size:12px;">Consultoria em Segurança e Saúde do Trabalho</span>
+    </div>
+    <div>
+      <h1>Avaliação Psicossocial<br>Organizacional</h1>
+      <p>Gerenciamento de Riscos Psicossociais — NR-1</p>
+    </div>
+  </div>
+  <div class="accent-bar"></div>
+
+  <div class="section">
+    <div class="section-title">Identificação</div>
+    <div class="grid-2">
+      <div class="field"><label>Empresa</label><div class="value">${empresa || "—"}</div></div>
+      <div class="field"><label>CNPJ</label><div class="value">${cnpj || "—"}</div></div>
+      <div class="field"><label>Setor</label><div class="value">${setor || "—"}</div></div>
+      <div class="field"><label>Data</label><div class="value">${dataAvaliacao || "—"}</div></div>
+      <div class="field"><label>Nº de Entrevistados</label><div class="value">${numEntrevistados || "—"}</div></div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 280px;gap:24px;margin-top:24px;">
+    <div class="section" style="margin-top:0;">
+      <div class="section-title">Fatores Psicossociais</div>
+      <table>
+        <thead><tr><th>Fator</th><th style="text-align:center;">Resultado</th></tr></thead>
+        <tbody>${factorRows}</tbody>
+      </table>
+    </div>
+    <div class="index-box">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:1px;">Índice Geral Psicossocial</div>
+      <div class="index-value">${indiceGeral}%</div>
+      <div class="badge">${classificacaoEfetiva}</div>
+      ${classificacaoTecnica ? `<div style="margin-top:12px;font-size:11px;color:#64748b;">Classificação Técnica: <strong>${classificacaoTecnica}</strong></div>` : ""}
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Conclusão Executiva</div>
+    <div class="conclusao">${conclusao || "—"}</div>
+  </div>
+
+  ${recsHtml ? `
+  <div class="section">
+    <div class="section-title">Recomendações</div>
+    <ol>${recsHtml}</ol>
+  </div>` : ""}
+</div>
+</body>
+</html>`;
+    const blob = new Blob([htmlString], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `avaliacao-${empresa || "organizacional"}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [empresa, cnpj, setor, dataAvaliacao, numEntrevistados, factors, classificacaoTecnica, classificacaoEfetiva, conclusao, recomendacoes, indiceGeral]);
+
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Report content */}
@@ -266,7 +378,6 @@ ${content}
 
         {/* ===== HEADER — Identidade Visual ===== */}
         <div className="bg-brand-dark px-8 py-5 flex items-center gap-6 rounded-t-lg">
-          {/* Logo */}
           <div className="flex-shrink-0">
             <img
               src={logoUrl || logoLbm}
@@ -274,15 +385,11 @@ ${content}
               className="h-14 w-auto max-w-[220px] object-contain"
             />
           </div>
-
-          {/* Subtitle */}
           <div className="flex-1 min-w-0">
             <p className="text-xs text-white/60 font-medium tracking-wide">
               Consultoria em Segurança e Saúde do Trabalho
             </p>
           </div>
-
-          {/* Title */}
           <div className="text-right flex-shrink-0">
             <h2 className="text-lg font-bold text-white uppercase tracking-tight leading-tight">
               Avaliação Psicossocial<br />Organizacional
@@ -301,17 +408,38 @@ ${content}
             {/* Left: Identification */}
             <div className="col-span-2 flex flex-col">
               <div className="grid grid-cols-3 gap-x-6 gap-y-4">
-                <div className="col-span-2 space-y-1">
+                {/* Empresa with search */}
+                <div className="col-span-2 space-y-1 relative" ref={empresaInputRef}>
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                     Empresa
                   </Label>
-                  <Input
-                    value={empresa}
-                    onChange={(e) => setEmpresa(e.target.value)}
-                    onBlur={handleLoadEmpresa}
-                    className="h-9 text-sm bg-white border-border"
-                    placeholder="Nome da empresa"
-                  />
+                  <div className="relative">
+                    <Input
+                      value={empresa}
+                      onChange={(e) => {
+                        setEmpresa(e.target.value);
+                        setShowEmpresaList(true);
+                      }}
+                      onFocus={() => setShowEmpresaList(true)}
+                      className="h-9 text-sm bg-white border-border pr-8"
+                      placeholder="Pesquisar ou digitar empresa..."
+                    />
+                    <Search className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+                  </div>
+                  {showEmpresaList && filteredEmpresas.length > 0 && (
+                    <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-border rounded-md shadow-lg max-h-40 overflow-y-auto">
+                      {filteredEmpresas.map((e) => (
+                        <button
+                          key={e}
+                          type="button"
+                          className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors"
+                          onClick={() => loadEmpresa(e)}
+                        >
+                          {e}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -466,7 +594,7 @@ ${content}
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 flex-1">
+          <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col">
               <h3 className="text-sm font-bold text-foreground mb-2">
                 Matriz AIHA — Avaliação de Risco
