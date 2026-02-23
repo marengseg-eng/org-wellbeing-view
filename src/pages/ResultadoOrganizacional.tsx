@@ -200,12 +200,28 @@ const ResultadoOrganizacional = () => {
   const handleExportPDF = useCallback(async () => {
     if (!reportRef.current) return;
     const el = reportRef.current;
-    const origMaxW = el.style.maxWidth;
-    const origMargin = el.style.margin;
-    el.style.maxWidth = "none";
-    el.style.margin = "0";
 
-    // Force all content visible - expand textareas
+    const MARGIN_MM = 6;
+    const A4_W = 210;
+    const A4_H = 297;
+    const usableW = A4_W - MARGIN_MM * 2;
+    const usableH = A4_H - MARGIN_MM * 2;
+
+    // Save originals
+    const origWidth = el.style.width;
+    const origMaxWidth = el.style.maxWidth;
+    const origMargin = el.style.margin;
+
+    // Hide print:hidden elements
+    const hiddenEls = el.querySelectorAll('.print\\:hidden');
+    const hiddenOrigDisplay: string[] = [];
+    hiddenEls.forEach((h) => {
+      const htmlEl = h as HTMLElement;
+      hiddenOrigDisplay.push(htmlEl.style.display);
+      htmlEl.style.display = 'none';
+    });
+
+    // Expand textareas
     const textareas = el.querySelectorAll("textarea");
     const origHeights: string[] = [];
     textareas.forEach((ta) => {
@@ -213,67 +229,139 @@ const ResultadoOrganizacional = () => {
       ta.style.height = ta.scrollHeight + "px";
     });
 
-    const canvas = await html2canvas(el, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: "#ffffff",
-      windowWidth: 1200,
-      scrollY: -window.scrollY,
-    });
+    // Force consistent width
+    el.style.width = "1400px";
+    el.style.maxWidth = "1400px";
+    el.style.margin = "0";
 
-    // Restore
-    textareas.forEach((ta, i) => { ta.style.height = origHeights[i]; });
-    el.style.maxWidth = origMaxW;
-    el.style.margin = origMargin;
+    try {
+      const canvas = await html2canvas(el, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        width: 1400,
+        windowWidth: 1400,
+        scrollX: 0,
+        scrollY: 0,
+        x: 0,
+        y: 0,
+      });
 
-    const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 6;
-    const usableW = pageWidth - margin * 2;
-    const usableH = pageHeight - margin * 2;
-    const imgRatio = canvas.height / canvas.width;
-    const totalImgH = usableW * imgRatio;
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const pxPerMM = canvas.width / usableW;
+      const sliceHeightPx = Math.floor(usableH * pxPerMM);
 
-    if (totalImgH <= usableH) {
-      pdf.addImage(canvas.toDataURL("image/png"), "PNG", margin, margin, usableW, totalImgH);
-    } else {
-      const pxPerPage = (usableH / totalImgH) * canvas.height;
-      let srcY = 0;
+      let heightLeft = canvas.height;
       let page = 0;
-      while (srcY < canvas.height - 1) {
-        const sliceH = Math.min(pxPerPage, canvas.height - srcY);
-        const sliceCanvas = document.createElement("canvas");
-        sliceCanvas.width = canvas.width;
-        sliceCanvas.height = sliceH;
-        const ctx = sliceCanvas.getContext("2d")!;
-        ctx.drawImage(canvas, 0, srcY, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
-        const drawH = (sliceH / canvas.width) * usableW;
+
+      while (heightLeft > 0) {
+        const currentSlicePx = Math.min(sliceHeightPx, heightLeft);
+        const currentSliceMM = currentSlicePx / pxPerMM;
+
         if (page > 0) pdf.addPage();
-        pdf.addImage(sliceCanvas.toDataURL("image/png"), "PNG", margin, margin, usableW, drawH);
-        srcY += sliceH;
+
+        const tempCanvas = document.createElement("canvas");
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = currentSlicePx;
+        const ctx = tempCanvas.getContext("2d")!;
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, currentSlicePx);
+        ctx.drawImage(
+          canvas,
+          0, canvas.height - heightLeft,
+          canvas.width, currentSlicePx,
+          0, 0,
+          canvas.width, currentSlicePx
+        );
+
+        pdf.addImage(
+          tempCanvas.toDataURL("image/png"),
+          "PNG",
+          MARGIN_MM, MARGIN_MM,
+          usableW, currentSliceMM
+        );
+
+        heightLeft -= currentSlicePx;
         page++;
       }
+
+      pdf.save(`avaliacao-${empresa || "organizacional"}.pdf`);
+    } finally {
+      // Restore everything
+      el.style.width = origWidth;
+      el.style.maxWidth = origMaxWidth;
+      el.style.margin = origMargin;
+      textareas.forEach((ta, i) => { ta.style.height = origHeights[i]; });
+      hiddenEls.forEach((h, i) => {
+        (h as HTMLElement).style.display = hiddenOrigDisplay[i];
+      });
     }
-    pdf.save(`avaliacao-${empresa || "organizacional"}.pdf`);
   }, [empresa]);
 
-  const handleExportHTML = useCallback(() => {
+  const handleExportHTML = useCallback(async () => {
     const statusColor = (s: string) => {
       if (s === "Conforme") return "#22c55e";
       if (s === "Atenção") return "#f59e0b";
       return "#ef4444";
     };
 
+    const barColor = (v: number) => {
+      if (v <= 30) return "#22c55e";
+      if (v <= 60) return "#f59e0b";
+      return "#ef4444";
+    };
+
+    // Convert FactorChart SVG to base64 image
+    let chartImgBase64 = "";
+    const chartContainer = reportRef.current?.querySelector(".recharts-responsive-container");
+    if (chartContainer) {
+      try {
+        const chartCanvas = await html2canvas(chartContainer as HTMLElement, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: "#ffffff",
+        });
+        chartImgBase64 = chartCanvas.toDataURL("image/png");
+      } catch { /* fallback to CSS bars */ }
+    }
+
     const factorRows = FACTORS.map((f) => {
       const v = factors[f.key];
-      const color = v <= 30 ? "#22c55e" : v <= 60 ? "#f59e0b" : "#ef4444";
-      return `<tr><td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;font-size:14px;">${f.label}</td><td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;font-weight:bold;color:${color};text-align:center;">${v}%</td></tr>`;
+      const color = barColor(v);
+      return `<tr>
+        <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;font-size:14px;width:55%;">${f.label}</td>
+        <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;width:35%;">
+          <div style="background:#f1f5f9;border-radius:6px;height:22px;position:relative;overflow:hidden;">
+            <div style="background:${color};height:100%;width:${v}%;border-radius:6px;transition:width 0.3s;"></div>
+          </div>
+        </td>
+        <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;font-weight:700;color:${color};text-align:center;font-size:14px;width:10%;">${v}%</td>
+      </tr>`;
     }).join("\n");
+
+    // AIHA Matrix as HTML table
+    const aihaColor = statusColor(aiha.classificacao);
+    const risk = aiha.probabilidade * aiha.severidade;
+    const aihaTableHtml = `
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:12px;">
+        <div style="text-align:center;background:#f8fafc;padding:16px;border-radius:8px;border:1px solid #e2e8f0;">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:0.5px;">Probabilidade</div>
+          <div style="font-size:32px;font-weight:800;color:${aihaColor};margin-top:4px;">${aiha.probabilidade}</div>
+        </div>
+        <div style="text-align:center;background:#f8fafc;padding:16px;border-radius:8px;border:1px solid #e2e8f0;">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:0.5px;">Severidade</div>
+          <div style="font-size:32px;font-weight:800;color:${aihaColor};margin-top:4px;">${aiha.severidade}</div>
+        </div>
+        <div style="text-align:center;background:#f8fafc;padding:16px;border-radius:8px;border:1px solid #e2e8f0;">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:0.5px;">Risco (P×S)</div>
+          <div style="font-size:32px;font-weight:800;color:${aihaColor};margin-top:4px;">${risk}</div>
+          <div style="display:inline-block;padding:3px 12px;border-radius:20px;font-size:11px;font-weight:700;color:#fff;background:${aihaColor};margin-top:6px;">${aiha.classificacao}</div>
+        </div>
+      </div>`;
 
     const recsHtml = recomendacoes
       .filter((r) => r.trim())
-      .map((r, i) => `<li style="margin-bottom:6px;font-size:14px;color:#334155;">${r}</li>`)
+      .map((r) => `<li style="margin-bottom:8px;font-size:14px;color:#334155;line-height:1.5;">${r}</li>`)
       .join("\n");
 
     const htmlString = `<!DOCTYPE html>
@@ -289,19 +377,21 @@ const ResultadoOrganizacional = () => {
   .header { background: #1e293b; padding: 24px 32px; display: flex; align-items: center; justify-content: space-between; border-radius: 8px 8px 0 0; }
   .header h1 { color: #fff; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; text-align: right; line-height: 1.3; }
   .header p { color: rgba(255,255,255,0.5); font-size: 11px; margin-top: 4px; }
-  .accent-bar { height: 4px; background: #1e4a7a; border-radius: 0 0 0 0; }
-  .section { margin-top: 24px; }
+  .accent-bar { height: 4px; background: #1e4a7a; }
+  .section { margin-top: 28px; }
   .section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; }
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px 24px; }
   .field label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px; }
-  .field .value { font-size: 15px; font-weight: 500; color: #1e293b; margin-top: 2px; padding: 6px 0; border-bottom: 1px solid #e2e8f0; }
+  .field .value { font-size: 15px; font-weight: 500; color: #1e293b; margin-top: 2px; padding: 6px 0; border-bottom: 1px solid #e2e8f0; min-height: 28px; }
   .index-box { text-align: center; padding: 28px 20px; border: 2px solid ${statusColor(classificacaoEfetiva)}; border-radius: 12px; margin-top: 16px; }
   .index-value { font-size: 56px; font-weight: 800; color: ${statusColor(classificacaoEfetiva)}; }
   .badge { display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; color: #fff; background: ${statusColor(classificacaoEfetiva)}; margin-top: 8px; }
   table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-  table th { text-align: left; padding: 8px 12px; background: #f1f5f9; font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
-  .conclusao { background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 14px; line-height: 1.6; color: #334155; white-space: pre-wrap; margin-top: 8px; min-height: 60px; }
-  ol { padding-left: 20px; margin-top: 8px; }
+  table th { text-align: left; padding: 10px 12px; background: #f1f5f9; font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+  .conclusao { background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 14px; line-height: 1.7; color: #334155; white-space: pre-wrap; margin-top: 8px; min-height: 60px; }
+  ol { padding-left: 24px; margin-top: 8px; }
+  .chart-img { width: 100%; max-width: 100%; height: auto; border-radius: 8px; margin-top: 8px; }
   @media print {
     @page { size: A4 portrait; margin: 15mm; }
     body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
@@ -311,9 +401,7 @@ const ResultadoOrganizacional = () => {
 <body>
 <div class="page">
   <div class="header">
-    <div>
-      <span style="color:rgba(255,255,255,0.6);font-size:12px;">Consultoria em Segurança e Saúde do Trabalho</span>
-    </div>
+    <div><span style="color:rgba(255,255,255,0.6);font-size:12px;">Consultoria em Segurança e Saúde do Trabalho</span></div>
     <div>
       <h1>Avaliação Psicossocial<br>Organizacional</h1>
       <p>Gerenciamento de Riscos Psicossociais — NR-1</p>
@@ -326,17 +414,19 @@ const ResultadoOrganizacional = () => {
     <div class="grid-2">
       <div class="field"><label>Empresa</label><div class="value">${empresa || "—"}</div></div>
       <div class="field"><label>CNPJ</label><div class="value">${cnpj || "—"}</div></div>
+    </div>
+    <div class="grid-3" style="margin-top:12px;">
       <div class="field"><label>Setor</label><div class="value">${setor || "—"}</div></div>
       <div class="field"><label>Data</label><div class="value">${dataAvaliacao || "—"}</div></div>
       <div class="field"><label>Nº de Entrevistados</label><div class="value">${numEntrevistados || "—"}</div></div>
     </div>
   </div>
 
-  <div style="display:grid;grid-template-columns:1fr 280px;gap:24px;margin-top:24px;">
+  <div style="display:grid;grid-template-columns:1fr 280px;gap:24px;margin-top:28px;">
     <div class="section" style="margin-top:0;">
       <div class="section-title">Fatores Psicossociais</div>
       <table>
-        <thead><tr><th>Fator</th><th style="text-align:center;">Resultado</th></tr></thead>
+        <thead><tr><th>Fator</th><th style="text-align:center;">Barra</th><th style="text-align:center;">Resultado</th></tr></thead>
         <tbody>${factorRows}</tbody>
       </table>
     </div>
@@ -346,6 +436,17 @@ const ResultadoOrganizacional = () => {
       <div class="badge">${classificacaoEfetiva}</div>
       ${classificacaoTecnica ? `<div style="margin-top:12px;font-size:11px;color:#64748b;">Classificação Técnica: <strong>${classificacaoTecnica}</strong></div>` : ""}
     </div>
+  </div>
+
+  ${chartImgBase64 ? `
+  <div class="section">
+    <div class="section-title">Gráfico de Fatores</div>
+    <img src="${chartImgBase64}" alt="Gráfico de Fatores Psicossociais" class="chart-img" />
+  </div>` : ""}
+
+  <div class="section">
+    <div class="section-title">Matriz de Risco — AIHA</div>
+    ${aihaTableHtml}
   </div>
 
   <div class="section">
@@ -368,7 +469,7 @@ const ResultadoOrganizacional = () => {
     a.download = `avaliacao-${empresa || "organizacional"}.html`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [empresa, cnpj, setor, dataAvaliacao, numEntrevistados, factors, classificacaoTecnica, classificacaoEfetiva, conclusao, recomendacoes, indiceGeral]);
+  }, [empresa, cnpj, setor, dataAvaliacao, numEntrevistados, factors, classificacaoTecnica, classificacaoEfetiva, conclusao, recomendacoes, indiceGeral, aiha]);
 
 
   return (
