@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useCallback, useEffect } from "react";
+import { useState, useMemo, useRef, useCallback, useEffect } from "react"; // v2
 import logoLbm from "@/assets/logo-lbm.jpg";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
