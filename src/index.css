@@ -34,16 +34,20 @@
 
     --radius: 0.75rem;
 
-    /* Status colors */
+    /* Status colors — 4 levels */
     --status-conforme: 152 60% 42%;
-    --status-atencao: 38 92% 50%;
+    --status-atencao: 45 93% 47%;
+    --status-elevado: 25 95% 53%;
     --status-critico: 0 72% 51%;
 
     /* Risk colors */
     --risk-baixo: 152 60% 42%;
-    --risk-moderado: 38 92% 50%;
+    --risk-moderado: 45 93% 47%;
     --risk-alto: 25 95% 53%;
     --risk-critico: 0 72% 51%;
+
+    /* Header */
+    --header-dark: 222 47% 11%;
 
     /* Chart colors */
     --chart-1: 222 60% 18%;

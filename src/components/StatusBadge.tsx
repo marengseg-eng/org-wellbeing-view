@@ -1,10 +1,11 @@
 import { cn } from "@/lib/utils";
 
-type StatusType = "Conforme" | "Atenção" | "Crítico" | "";
+type StatusType = "Conforme" | "Atenção" | "Elevado" | "Crítico" | "";
 
 const statusStyles: Record<string, string> = {
   Conforme: "bg-status-conforme/15 text-status-conforme border-status-conforme/30",
   "Atenção": "bg-status-atencao/15 text-status-atencao border-status-atencao/30",
+  Elevado: "bg-status-elevado/15 text-status-elevado border-status-elevado/30",
   "Crítico": "bg-status-critico/15 text-status-critico border-status-critico/30",
 };
 
