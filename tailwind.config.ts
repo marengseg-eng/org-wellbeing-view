@@ -60,6 +60,7 @@ export default {
         status: {
           conforme: "hsl(var(--status-conforme))",
           atencao: "hsl(var(--status-atencao))",
+          elevado: "hsl(var(--status-elevado))",
           critico: "hsl(var(--status-critico))",
         },
         risk: {
