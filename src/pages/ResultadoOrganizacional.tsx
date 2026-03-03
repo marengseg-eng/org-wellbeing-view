@@ -405,7 +405,7 @@ const ResultadoOrganizacional = () => {
   </div>
   <div class="section"><div class="section-title">Conclusão Executiva</div><div class="conclusao">${conclusao || "—"}</div></div>
   ${recsHtml ? `<div class="section"><div class="section-title">Recomendações</div><ol>${recsHtml}</ol></div>` : ""}
-  <div class="footer">CREA-SP: 5069572947 &nbsp;|&nbsp; CREFITO 3/209468-F</div>
+  <div class="footer">Engenheiro de Segurança do Trabalho — CREA-SP: 5069572947 &nbsp;|&nbsp; Fisioterapeuta — Ergonomista — CREFITO 3/209468-F</div>
 </div></body></html>`;
 
     const blob = new Blob([htmlString], { type: "text/html;charset=utf-8" });
@@ -648,9 +648,12 @@ const ResultadoOrganizacional = () => {
         </div>
 
         {/* Footer with credentials */}
-        <div className="px-8 py-4 border-t text-center">
+        <div className="px-8 py-4 border-t text-center space-y-0.5">
           <p className="text-[11px] text-muted-foreground">
-            CREA-SP: 5069572947 &nbsp;|&nbsp; CREFITO 3/209468-F
+            Engenheiro de Segurança do Trabalho — CREA-SP: 5069572947
+          </p>
+          <p className="text-[11px] text-muted-foreground">
+            Fisioterapeuta — Ergonomista — CREFITO 3/209468-F
           </p>
         </div>
       </div>
