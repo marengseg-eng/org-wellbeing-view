@@ -53,17 +53,39 @@ const getClassificacaoAutomatica = (value: number): ClassificacaoGeral => {
 const STORAGE_PREFIX = "avaliacao_";
 
 const getSavedEmpresas = (): string[] => {
-  const empresas: string[] = [];
+  const set = new Set<string>();
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
     if (key?.startsWith(STORAGE_PREFIX)) {
       try {
         const d = JSON.parse(localStorage.getItem(key) || "");
-        if (d.empresa) empresas.push(d.empresa);
+        if (d.empresa) set.add(d.empresa);
       } catch { /* ignore */ }
     }
   }
-  return empresas.sort();
+  return Array.from(set).sort();
+};
+
+const getSavedSetores = (empresaNome: string): string[] => {
+  const setores: string[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key?.startsWith(STORAGE_PREFIX)) {
+      try {
+        const d = JSON.parse(localStorage.getItem(key) || "");
+        if (d.empresa?.toLowerCase() === empresaNome.toLowerCase() && d.setor) {
+          setores.push(d.setor);
+        }
+      } catch { /* ignore */ }
+    }
+  }
+  return setores.sort();
+};
+
+const makeStorageKey = (emp: string, set: string) => {
+  const base = emp.trim().toLowerCase().replace(/\s+/g, "_");
+  const s = set.trim().toLowerCase().replace(/\s+/g, "_");
+  return `${STORAGE_PREFIX}${base}${s ? `__${s}` : ""}`;
 };
 
 const ResultadoOrganizacional = () => {
@@ -87,6 +109,11 @@ const ResultadoOrganizacional = () => {
   const [showEmpresaList, setShowEmpresaList] = useState(false);
   const empresaInputRef = useRef<HTMLDivElement>(null);
 
+  // Setor search
+  const [savedSetores, setSavedSetores] = useState<string[]>([]);
+  const [showSetorList, setShowSetorList] = useState(false);
+  const setorInputRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     setSavedEmpresas(getSavedEmpresas());
   }, []);
@@ -97,6 +124,9 @@ const ResultadoOrganizacional = () => {
       if (empresaInputRef.current && !empresaInputRef.current.contains(e.target as Node)) {
         setShowEmpresaList(false);
       }
+      if (setorInputRef.current && !setorInputRef.current.contains(e.target as Node)) {
+        setShowSetorList(false);
+      }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -106,6 +136,21 @@ const ResultadoOrganizacional = () => {
     if (!empresa.trim()) return savedEmpresas;
     const q = empresa.toLowerCase();
     return savedEmpresas.filter((e) => e.toLowerCase().includes(q));
+  }, [empresa, savedEmpresas]);
+
+  const filteredSetores = useMemo(() => {
+    if (!setor.trim()) return savedSetores;
+    const q = setor.toLowerCase();
+    return savedSetores.filter((s) => s.toLowerCase().includes(q));
+  }, [setor, savedSetores]);
+
+  // Update saved setores when empresa changes
+  useEffect(() => {
+    if (empresa.trim()) {
+      setSavedSetores(getSavedSetores(empresa));
+    } else {
+      setSavedSetores([]);
+    }
   }, [empresa, savedEmpresas]);
 
   const formatCnpj = (value: string) => {
@@ -123,13 +168,14 @@ const ResultadoOrganizacional = () => {
   const updateRecomendacao = (index: number, value: string) =>
     setRecomendacoes((prev) => prev.map((r, i) => (i === index ? value : r)));
 
-  const loadEmpresa = useCallback((name: string) => {
-    const key = `${STORAGE_PREFIX}${name.trim().toLowerCase().replace(/\s+/g, "_")}`;
+  const loadEmpresaSetor = useCallback((empresaNome: string, setorNome?: string) => {
+    // If only empresa selected (no setor), load first available or just set empresa+cnpj
+    const key = makeStorageKey(empresaNome, setorNome || "");
     const saved = localStorage.getItem(key);
     if (saved) {
       try {
         const d = JSON.parse(saved);
-        setEmpresa(d.empresa || name);
+        setEmpresa(d.empresa || empresaNome);
         setCnpj(d.cnpj || "");
         setSetor(d.setor || "");
         setDataAvaliacao(d.dataAvaliacao || "");
@@ -138,10 +184,26 @@ const ResultadoOrganizacional = () => {
         setClassificacaoTecnica(d.classificacaoTecnica || "");
         setConclusao(d.conclusao || "");
         setRecomendacoes(d.recomendacoes || [""]);
-        toast.info(`Avaliação carregada para "${d.empresa || name}".`);
+        toast.info(`Avaliação carregada: "${d.empresa}"${d.setor ? ` — ${d.setor}` : ""}`);
       } catch { /* ignore */ }
+    } else {
+      // No exact match — just set the empresa name and load cnpj from any setor
+      setEmpresa(empresaNome);
+      const setores = getSavedSetores(empresaNome);
+      if (setores.length > 0) {
+        const firstKey = makeStorageKey(empresaNome, setores[0]);
+        const firstSaved = localStorage.getItem(firstKey);
+        if (firstSaved) {
+          try {
+            const d = JSON.parse(firstSaved);
+            setCnpj(d.cnpj || "");
+          } catch { /* ignore */ }
+        }
+      }
+      setSetor("");
     }
     setShowEmpresaList(false);
+    setShowSetorList(false);
   }, []);
 
   const indiceGeral = useMemo(() => {
@@ -184,7 +246,7 @@ const ResultadoOrganizacional = () => {
       toast.error("Preencha o nome da empresa antes de salvar.");
       return;
     }
-    const key = `${STORAGE_PREFIX}${empresa.trim().toLowerCase().replace(/\s+/g, "_")}`;
+    const key = makeStorageKey(empresa, setor);
     const payload = {
       empresa, cnpj, setor, dataAvaliacao, numEntrevistados, factors,
       classificacaoTecnica, conclusao, recomendacoes,
@@ -192,7 +254,8 @@ const ResultadoOrganizacional = () => {
     };
     localStorage.setItem(key, JSON.stringify(payload));
     setSavedEmpresas(getSavedEmpresas());
-    toast.success(`Avaliação salva para "${empresa}".`);
+    setSavedSetores(getSavedSetores(empresa));
+    toast.success(`Avaliação salva: "${empresa}"${setor ? ` — ${setor}` : ""}`);
   }, [empresa, cnpj, setor, dataAvaliacao, numEntrevistados, factors, classificacaoTecnica, conclusao, recomendacoes]);
 
   const handlePrint = useCallback(() => { window.print(); }, []);
@@ -578,7 +641,7 @@ const ResultadoOrganizacional = () => {
                           key={e}
                           type="button"
                           className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors"
-                          onClick={() => loadEmpresa(e)}
+                          onClick={() => loadEmpresaSetor(e)}
                         >
                           {e}
                         </button>
@@ -598,16 +661,37 @@ const ResultadoOrganizacional = () => {
                     maxLength={18}
                   />
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1 relative" ref={setorInputRef}>
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                     Setor
                   </Label>
-                  <Input
-                    value={setor}
-                    onChange={(e) => setSetor(e.target.value)}
-                    className="h-9 text-sm bg-white border-border"
-                    placeholder="Setor avaliado"
-                  />
+                  <div className="relative">
+                    <Input
+                      value={setor}
+                      onChange={(e) => {
+                        setSetor(e.target.value);
+                        setShowSetorList(true);
+                      }}
+                      onFocus={() => setShowSetorList(true)}
+                      className="h-9 text-sm bg-white border-border pr-8"
+                      placeholder="Pesquisar ou digitar setor..."
+                    />
+                    <Search className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+                  </div>
+                  {showSetorList && filteredSetores.length > 0 && (
+                    <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-border rounded-md shadow-lg max-h-40 overflow-y-auto">
+                      {filteredSetores.map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors"
+                          onClick={() => loadEmpresaSetor(empresa, s)}
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
