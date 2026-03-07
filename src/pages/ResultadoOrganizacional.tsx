@@ -465,11 +465,11 @@ const ResultadoOrganizacional = () => {
                 <div className="col-span-2 space-y-1 relative" ref={empresaInputRef}>
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Empresa</Label>
                   <div className="relative">
-                    <Input value={empresa} onChange={(e) => { setEmpresa(e.target.value); setShowEmpresaList(true); }} onFocus={() => setShowEmpresaList(true)} className="h-9 text-sm bg-white border-border pr-8" placeholder="Pesquisar ou digitar empresa..." />
+                    <Input value={empresa} onChange={(e) => { setEmpresa(e.target.value); setShowEmpresaList(true); }} onFocus={() => setShowEmpresaList(true)} className="h-9 text-sm bg-card border-border pr-8" placeholder="Pesquisar ou digitar empresa..." />
                     <Search className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
                   </div>
                   {showEmpresaList && filteredEmpresas.length > 0 && (
-                    <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-border rounded-md shadow-lg max-h-40 overflow-y-auto">
+                    <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-lg max-h-40 overflow-y-auto">
                       {filteredEmpresas.map((e) => (
                         <button key={e} type="button" className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors" onClick={() => loadEmpresaSetor(e)}>{e}</button>
                       ))}
@@ -478,14 +478,14 @@ const ResultadoOrganizacional = () => {
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">CNPJ</Label>
-                  <Input value={cnpj} onChange={(e) => setCnpj(formatCnpj(e.target.value))} className="h-9 text-sm bg-white border-border" placeholder="00.000.000/0000-00" maxLength={18} />
+                  <Input value={cnpj} onChange={(e) => setCnpj(formatCnpj(e.target.value))} className="h-9 text-sm bg-card border-border" placeholder="00.000.000/0000-00" maxLength={18} />
                 </div>
 
                 {/* Setor Tipo */}
                 <div className="space-y-1">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Tipo de Setor</Label>
                   <Select value={setorTipo} onValueChange={setSetorTipo}>
-                    <SelectTrigger className="h-9 text-sm bg-white border-border"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="h-9 text-sm bg-card border-border"><SelectValue /></SelectTrigger>
                     <SelectContent className="bg-popover">
                       {SECTOR_OPTIONS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                     </SelectContent>
@@ -496,11 +496,11 @@ const ResultadoOrganizacional = () => {
                 <div className="space-y-1 relative" ref={setorInputRef}>
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Setor / GHE</Label>
                   <div className="relative">
-                    <Input value={setorCustom} onChange={(e) => { setSetorCustom(e.target.value); setShowSetorList(true); }} onFocus={() => setShowSetorList(true)} className="h-9 text-sm bg-white border-border pr-8" placeholder="Nome do setor..." />
+                    <Input value={setorCustom} onChange={(e) => { setSetorCustom(e.target.value); setShowSetorList(true); }} onFocus={() => setShowSetorList(true)} className="h-9 text-sm bg-card border-border pr-8" placeholder="Nome do setor..." />
                     <Search className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
                   </div>
                   {showSetorList && filteredSetores.length > 0 && (
-                    <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-border rounded-md shadow-lg max-h-40 overflow-y-auto">
+                    <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-lg max-h-40 overflow-y-auto">
                       {filteredSetores.map((s) => (
                         <button key={s} type="button" className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors" onClick={() => loadEmpresaSetor(empresa, s)}>{s}</button>
                       ))}
@@ -510,11 +510,11 @@ const ResultadoOrganizacional = () => {
 
                 <div className="space-y-1">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Data</Label>
-                  <Input type="date" value={dataAvaliacao} onChange={(e) => setDataAvaliacao(e.target.value)} className="h-9 text-sm bg-white border-border" />
+                  <Input type="date" value={dataAvaliacao} onChange={(e) => setDataAvaliacao(e.target.value)} className="h-9 text-sm bg-card border-border" />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Nº de Entrevistados</Label>
-                  <Input type="number" min={1} value={numEntrevistados} onChange={(e) => setNumEntrevistados(e.target.value === "" ? "" : Number(e.target.value))} className="h-9 text-sm bg-white border-border" placeholder="Ex: 50" />
+                  <Input type="number" min={1} value={numEntrevistados} onChange={(e) => setNumEntrevistados(e.target.value === "" ? "" : Number(e.target.value))} className="h-9 text-sm bg-card border-border" placeholder="Ex: 50" />
                 </div>
               </div>
 
@@ -541,7 +541,7 @@ const ResultadoOrganizacional = () => {
                         type="number" min={0} max={100}
                         value={factors[f.key] || ""}
                         onChange={(e) => setFactors((prev) => ({ ...prev, [f.key]: Number(e.target.value) }))}
-                        className={cn("h-9 text-sm bg-white border-border", (factors[f.key] || 0) > 50 && "border-destructive/50")}
+                        className={cn("h-9 text-sm bg-card border-border", (factors[f.key] || 0) > 50 && "border-destructive/50")}
                         placeholder="0–100"
                       />
                     </div>
@@ -559,7 +559,7 @@ const ResultadoOrganizacional = () => {
               <Separator className="my-4 w-full" />
               <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Classificação Técnica Final</span>
               <Select value={classificacaoTecnica} onValueChange={(v) => setClassificacaoTecnica(v as ClassificacaoGeral)}>
-                <SelectTrigger className="h-9 text-sm bg-white border-border w-full"><SelectValue placeholder="Automática" /></SelectTrigger>
+                <SelectTrigger className="h-9 text-sm bg-card border-border w-full"><SelectValue placeholder="Automática" /></SelectTrigger>
                 <SelectContent className="bg-popover">
                   <SelectItem value="Conforme">Conforme</SelectItem>
                   <SelectItem value="Atenção">Atenção</SelectItem>
@@ -593,12 +593,12 @@ const ResultadoOrganizacional = () => {
               </TabsList>
             </div>
             <TabsContent value="fatores">
-              <div className="border rounded-lg p-3 bg-white">
+              <div className="border rounded-lg p-3 bg-card">
                 <FactorChart factors={chartData} />
               </div>
             </TabsContent>
             <TabsContent value="radar">
-              <div className="border rounded-lg p-3 bg-white">
+              <div className="border rounded-lg p-3 bg-card">
                 <RadarFactorChart factors={radarData} />
               </div>
             </TabsContent>
@@ -607,7 +607,7 @@ const ResultadoOrganizacional = () => {
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col">
               <h3 className="text-sm font-bold text-foreground mb-2">Matriz AIHA — Avaliação de Risco</h3>
-              <div className="border rounded-lg p-3 bg-white flex-1 flex items-center justify-center">
+              <div className="border rounded-lg p-3 bg-card flex-1 flex items-center justify-center">
                 <AIHAMatrix data={aiha} onChange={(d) => {/* AIHA is synced with IGP, read-only for now */}} />
               </div>
             </div>
@@ -617,11 +617,11 @@ const ResultadoOrganizacional = () => {
                   <h3 className="text-sm font-bold text-foreground">Conclusão Executiva</h3>
                   <span className="text-[10px] text-muted-foreground">{conclusao.length}/2000</span>
                 </div>
-                <div className="border rounded-lg p-3 bg-white">
+                <div className="border rounded-lg p-3 bg-card">
                   <Textarea
                     value={conclusao} onChange={(e) => setConclusao(e.target.value)}
                     placeholder="Resumo executivo da avaliação psicossocial organizacional..."
-                    className="border-0 p-0 resize-none text-sm bg-white focus-visible:ring-0 min-h-[150px]"
+                    className="border-0 p-0 resize-none text-sm bg-card focus-visible:ring-0 min-h-[150px]"
                     maxLength={2000}
                   />
                 </div>
@@ -631,11 +631,11 @@ const ResultadoOrganizacional = () => {
                   <h3 className="text-sm font-bold text-foreground">Recomendações</h3>
                   <Button type="button" variant="outline" size="sm" onClick={addRecomendacao} className="print:hidden h-7 text-xs gap-1">+ Item</Button>
                 </div>
-                <div className="border rounded-lg p-3 bg-white space-y-2">
+                <div className="border rounded-lg p-3 bg-card space-y-2">
                   {recomendacoes.map((rec, i) => (
                     <div key={i} className="flex items-start gap-2">
                       <span className="text-xs font-bold text-muted-foreground mt-2 min-w-[20px]">{i + 1}.</span>
-                      <Input value={rec} onChange={(e) => updateRecomendacao(i, e.target.value)} placeholder={`Recomendação ${i + 1}...`} className="h-8 text-sm bg-white border-border flex-1" />
+                      <Input value={rec} onChange={(e) => updateRecomendacao(i, e.target.value)} placeholder={`Recomendação ${i + 1}...`} className="h-8 text-sm bg-card border-border flex-1" />
                       {recomendacoes.length > 1 && (
                         <button onClick={() => removeRecomendacao(i)} className="print:hidden text-muted-foreground hover:text-destructive mt-1.5" title="Remover"><X className="h-4 w-4" /></button>
                       )}
