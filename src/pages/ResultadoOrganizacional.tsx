@@ -341,17 +341,17 @@ const ResultadoOrganizacional = () => {
     let chartImgBase64 = "";
     const chartContainer = reportRef.current?.querySelector(".recharts-responsive-container");
     if (chartContainer) {
-      try { const c = await html2canvas(chartContainer as HTMLElement, { scale: 2, useCORS: true, backgroundColor: "#ffffff" }); chartImgBase64 = c.toDataURL("image/png"); } catch {}
+      try { const c = await html2canvas(chartContainer as HTMLElement, { scale: 2, useCORS: true, backgroundColor: "#0f1729" }); chartImgBase64 = c.toDataURL("image/png"); } catch {}
     }
 
     const factorRows = activeFactors.map((f) => {
       const v = factors[f.key] || 0;
       const color = barColor(v);
       return `<tr>
-        <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;font-size:14px;width:45%;">${f.label}</td>
-        <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;width:8%;text-align:center;font-size:11px;color:#64748b;">×${f.weight}</td>
-        <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;width:35%;"><div style="background:#f1f5f9;border-radius:6px;height:22px;position:relative;overflow:hidden;"><div style="background:${color};height:100%;width:${v}%;border-radius:6px;"></div></div></td>
-        <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;font-weight:700;color:${color};text-align:center;font-size:14px;width:10%;">${v}%</td>
+        <td style="padding:10px 12px;border-bottom:1px solid #1e293b;font-size:14px;width:45%;color:#e2e8f0;">${f.label}</td>
+        <td style="padding:10px 12px;border-bottom:1px solid #1e293b;width:8%;text-align:center;font-size:11px;color:#94a3b8;">×${f.weight}</td>
+        <td style="padding:10px 12px;border-bottom:1px solid #1e293b;width:35%;"><div style="background:#1e293b;border-radius:6px;height:22px;position:relative;overflow:hidden;"><div style="background:${color};height:100%;width:${v}%;border-radius:6px;"></div></div></td>
+        <td style="padding:10px 12px;border-bottom:1px solid #1e293b;font-weight:700;color:${color};text-align:center;font-size:14px;width:10%;">${v}%</td>
       </tr>`;
     }).join("\n");
 
@@ -359,7 +359,7 @@ const ResultadoOrganizacional = () => {
 
     let matrixRows = "";
     for (let p = 5; p >= 1; p--) {
-      let cells = `<td style="width:36px;text-align:center;font-weight:700;font-size:12px;color:#64748b;padding:4px;">${p}</td>`;
+      let cells = `<td style="width:36px;text-align:center;font-weight:700;font-size:12px;color:#94a3b8;padding:4px;">${p}</td>`;
       for (let s = 1; s <= 5; s++) {
         const cr = p * s;
         const isSelected = aiha.probabilidade === p && aiha.severidade === s;
@@ -370,12 +370,12 @@ const ResultadoOrganizacional = () => {
       matrixRows += `<tr>${cells}</tr>`;
     }
 
-    const recsHtml = recomendacoes.filter((r) => r.trim()).map((r, i) => `<li style="margin-bottom:8px;font-size:14px;color:#334155;line-height:1.5;">${r}</li>`).join("\n");
+    const recsHtml = recomendacoes.filter((r) => r.trim()).map((r, i) => `<li style="margin-bottom:8px;font-size:14px;color:#cbd5e1;line-height:1.5;">${r}</li>`).join("\n");
 
     const htmlString = `<!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Avaliação Psicossocial — ${empresa || "Organizacional"}</title>
-<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',system-ui,sans-serif;background:#fff;color:#1e293b}.page{max-width:900px;margin:0 auto;padding:40px 32px}.header{background:#0f172a;padding:24px 32px;display:flex;align-items:center;justify-content:space-between;border-radius:8px 8px 0 0}.header h1{color:#fff;font-size:18px;text-transform:uppercase;letter-spacing:1px;text-align:right;line-height:1.3}.header p{color:rgba(255,255,255,0.5);font-size:11px;margin-top:4px}.accent-bar{height:4px;background:#1e4a7a}.section{margin-top:28px}.section-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#64748b;margin-bottom:12px;border-bottom:2px solid #e2e8f0;padding-bottom:6px}.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px 24px}.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 24px}.field label{font-size:11px;font-weight:700;text-transform:uppercase;color:#94a3b8;letter-spacing:0.5px}.field .value{font-size:15px;font-weight:500;color:#1e293b;margin-top:2px;padding:6px 0;border-bottom:1px solid #e2e8f0;min-height:28px}.index-box{text-align:center;padding:28px 20px;border:2px solid ${sColor};border-radius:12px;margin-top:16px}.index-value{font-size:56px;font-weight:800;color:${sColor}}.badge{display:inline-block;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:700;color:#fff;background:${sColor};margin-top:8px}table{width:100%;border-collapse:collapse;margin-top:8px}table th{text-align:left;padding:10px 12px;background:#f1f5f9;font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px}.conclusao{background:#f8fafc;padding:20px;border-radius:8px;border:1px solid #e2e8f0;font-size:14px;line-height:1.7;color:#334155;white-space:pre-wrap;margin-top:8px;min-height:60px}ol{padding-left:24px;margin-top:8px}.footer{margin-top:40px;padding-top:16px;border-top:2px solid #e2e8f0;text-align:center;font-size:11px;color:#94a3b8}@media print{@page{size:A4 portrait;margin:15mm}body{print-color-adjust:exact;-webkit-print-color-adjust:exact}}</style>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',system-ui,sans-serif;background:#0b1120;color:#e2e8f0}.page{max-width:900px;margin:0 auto;padding:40px 32px}.header{background:#0f172a;padding:24px 32px;display:flex;align-items:center;justify-content:space-between;border-radius:8px 8px 0 0}.header h1{color:#fff;font-size:18px;text-transform:uppercase;letter-spacing:1px;text-align:right;line-height:1.3}.header p{color:rgba(255,255,255,0.5);font-size:11px;margin-top:4px}.accent-bar{height:4px;background:#1e4a7a}.section{margin-top:28px}.section-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;margin-bottom:12px;border-bottom:2px solid #1e293b;padding-bottom:6px}.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px 24px}.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 24px}.field label{font-size:11px;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:0.5px}.field .value{font-size:15px;font-weight:500;color:#e2e8f0;margin-top:2px;padding:6px 0;border-bottom:1px solid #1e293b;min-height:28px}.index-box{text-align:center;padding:28px 20px;border:2px solid ${sColor};border-radius:12px;margin-top:16px;background:#0f172a}.index-value{font-size:56px;font-weight:800;color:${sColor}}.badge{display:inline-block;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:700;color:#fff;background:${sColor};margin-top:8px}table{width:100%;border-collapse:collapse;margin-top:8px}table th{text-align:left;padding:10px 12px;background:#1e293b;font-size:12px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px}.conclusao{background:#0f172a;padding:20px;border-radius:8px;border:1px solid #1e293b;font-size:14px;line-height:1.7;color:#cbd5e1;white-space:pre-wrap;margin-top:8px;min-height:60px}ol{padding-left:24px;margin-top:8px}.footer{margin-top:40px;padding-top:16px;border-top:2px solid #1e293b;text-align:center;font-size:11px;color:#64748b}@media print{@page{size:A4 portrait;margin:15mm}body{print-color-adjust:exact;-webkit-print-color-adjust:exact}}</style>
 </head><body><div class="page">
   <div class="header">
     <div><span style="color:rgba(255,255,255,0.7);font-size:16px;font-weight:700;">LBM BORATTI</span><br><span style="color:rgba(255,255,255,0.5);font-size:12px;">Consultoria em SST</span></div>
@@ -393,15 +393,15 @@ const ResultadoOrganizacional = () => {
       <table><thead><tr><th>Fator</th><th style="text-align:center;">Peso</th><th style="text-align:center;">Barra</th><th style="text-align:center;">%</th></tr></thead><tbody>${factorRows}</tbody></table>
     </div>
     <div class="index-box">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:1px;">Índice Geral Psicossocial</div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#94a3b8;letter-spacing:1px;">Índice Geral Psicossocial</div>
       <div class="index-value">${indiceGeral}%</div><div class="badge">${classificacaoEfetiva}</div>
-      ${classificacaoTecnica ? `<div style="margin-top:12px;font-size:11px;color:#64748b;">Classificação Técnica: <strong>${classificacaoTecnica}</strong></div>` : ""}
+      ${classificacaoTecnica ? `<div style="margin-top:12px;font-size:11px;color:#94a3b8;">Classificação Técnica: <strong style="color:#e2e8f0;">${classificacaoTecnica}</strong></div>` : ""}
     </div>
   </div>
   ${chartImgBase64 ? `<div class="section"><div class="section-title">Gráfico de Fatores</div><img src="${chartImgBase64}" alt="Gráfico" style="width:100%;max-width:100%;border-radius:8px;margin-top:8px;" /></div>` : ""}
   <div class="section"><div class="section-title">Matriz de Risco — AIHA</div>
     <table style="border-collapse:separate;border-spacing:3px;max-width:350px;"><thead><tr><th style="width:36px;"></th><th style="text-align:center;">1</th><th style="text-align:center;">2</th><th style="text-align:center;">3</th><th style="text-align:center;">4</th><th style="text-align:center;">5</th></tr></thead><tbody>${matrixRows}</tbody></table>
-    <p style="margin-top:12px;font-size:14px;">P=${aiha.probabilidade} × S=${aiha.severidade} = <strong>${aiha.probabilidade * aiha.severidade}</strong> — <span style="color:${sColor};font-weight:700;">${aiha.classificacao}</span></p>
+    <p style="margin-top:12px;font-size:14px;color:#cbd5e1;">P=${aiha.probabilidade} × S=${aiha.severidade} = <strong>${aiha.probabilidade * aiha.severidade}</strong> — <span style="color:${sColor};font-weight:700;">${aiha.classificacao}</span></p>
   </div>
   <div class="section"><div class="section-title">Conclusão Executiva</div><div class="conclusao">${conclusao || "—"}</div></div>
   ${recsHtml ? `<div class="section"><div class="section-title">Recomendações</div><ol>${recsHtml}</ol></div>` : ""}
