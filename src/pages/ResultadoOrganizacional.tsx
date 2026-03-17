@@ -432,7 +432,7 @@ const ResultadoOrganizacional = () => {
     a.download = `avaliacao-${empresa || "organizacional"}.html`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [empresa, cnpj, setorCustom, setorTipo, dataAvaliacao, numEntrevistados, factors, classificacaoTecnica, classificacaoEfetiva, conclusao, recomendacoes, indiceGeral, aiha, activeFactors]);
+  }, [empresa, cnpj, setorCustom, setorTipo, dataAvaliacao, numEntrevistados, factors, classificacaoTecnica, classificacaoEfetiva, conclusao, recomendacoes, indiceGeral, aiha, activeFactors, acoes5w2h]);
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
