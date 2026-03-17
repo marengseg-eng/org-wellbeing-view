@@ -650,6 +650,17 @@ const ResultadoOrganizacional = () => {
           </div>
         </div>
 
+        {/* ===== PAGE 3: 5W2H ===== */}
+        <div className="print-page px-8 py-6">
+          <div className="flex items-center gap-2 mb-3">
+            <ClipboardList className="h-4 w-4 text-primary" />
+            <h3 className="text-sm font-bold text-foreground">Plano de Ação — 5W2H</h3>
+          </div>
+          <div className="border rounded-lg p-4 bg-card">
+            <Plano5W2H acoes={acoes5w2h} onChange={setAcoes5w2h} />
+          </div>
+        </div>
+
         {/* Footer with credentials */}
         <div className="px-8 py-4 border-t text-center space-y-0.5">
           <p className="text-[11px] text-muted-foreground">
