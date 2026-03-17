@@ -781,12 +781,24 @@ const ResultadoOrganizacional = () => {
 
         {/* ===== PAGE 3: 5W2H ===== */}
         <div className="print-page px-8 py-6">
-          <div className="flex items-center gap-2 mb-3">
-            <ClipboardList className="h-4 w-4 text-primary" />
-            <h3 className="text-sm font-bold text-foreground">Plano de Ação — 5W2H</h3>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <ClipboardList className="h-4 w-4 text-primary" />
+              <h3 className="text-sm font-bold text-foreground">Plano de Ação — 5W2H</h3>
+            </div>
+            <span className="text-[10px] text-muted-foreground italic print:hidden">
+              Gerado automaticamente para fatores acima de 50% • Editável
+            </span>
           </div>
           <div className="border rounded-lg p-4 bg-card">
-            <Plano5W2H acoes={acoes5w2h} onChange={setAcoes5w2hManual} />
+            {acoes5w2h.length > 0 ? (
+              <Plano5W2H acoes={acoes5w2h} onChange={setAcoes5w2hManual} />
+            ) : (
+              <div className="text-center py-8 text-muted-foreground text-sm">
+                Nenhum fator acima de 50%. Ações 5W2H serão geradas automaticamente quando houver fatores em nível elevado ou crítico.
+              </div>
+            )}
+          </div>
           </div>
         </div>
 
