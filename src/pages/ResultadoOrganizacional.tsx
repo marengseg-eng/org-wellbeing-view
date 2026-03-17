@@ -296,7 +296,7 @@ const ResultadoOrganizacional = () => {
         setClassificacaoTecnica(d.classificacaoTecnica || "");
         setConclusao(d.conclusao || "");
         setRecomendacoes(d.recomendacoes || [""]);
-        setAcoes5w2h(d.acoes5w2h || []);
+        setAcoes5w2hManual(d.acoes5w2h || []);
         toast.info(`Avaliação carregada: "${d.empresa}"${d.setorCustom || d.setor ? ` — ${d.setorCustom || d.setor}` : ""}`);
       } catch {}
     } else {
