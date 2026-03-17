@@ -47,6 +47,100 @@ const SECTOR_FACTORS: Record<string, FactorKey[]> = {
   "ESCRITÓRIO": ["carga", "jornada", "autonomia", "exigencias", "satisfacao", "comunicacao"],
 };
 
+/* ========== 5W2H TEMPLATES PER FACTOR ========== */
+const FACTOR_5W2H_TEMPLATES: Record<string, Omit<import("@/components/Plano5W2H").Acao5W2H, "id" | "status">> = {
+  carga: {
+    what: "Reavaliar distribuição de tarefas e carga de trabalho",
+    why: "Fator Carga e Ritmo de Trabalho em nível elevado/crítico",
+    where: "Todos os setores afetados",
+    when: "30 dias — curto prazo",
+    who: "Gestores de área e RH",
+    how: "Mapeamento de tarefas, redistribuição de demandas, contratação se necessário",
+    howMuch: "A definir conforme diagnóstico",
+  },
+  jornada: {
+    what: "Revisar escalas e organização da jornada de trabalho",
+    why: "Fator Jornada e Organização do Tempo em nível elevado/crítico",
+    where: "Setores com jornadas estendidas",
+    when: "45 dias — curto prazo",
+    who: "RH e Gestão de Pessoas",
+    how: "Análise de escalas, implementação de pausas regulamentares, controle de horas extras",
+    howMuch: "A definir conforme diagnóstico",
+  },
+  autonomia: {
+    what: "Ampliar autonomia e participação dos colaboradores",
+    why: "Fator Autonomia e Controle em nível elevado/crítico",
+    where: "Áreas com gestão centralizada",
+    when: "60 dias — médio prazo",
+    who: "Lideranças e RH",
+    how: "Delegação de decisões, programas de empowerment, feedbacks participativos",
+    howMuch: "Baixo custo — treinamento interno",
+  },
+  exigencias: {
+    what: "Implementar suporte para exigências cognitivas e emocionais",
+    why: "Fator Exigências Cognitivas e Emocionais em nível elevado/crítico",
+    where: "Postos com alta demanda emocional/cognitiva",
+    when: "30 dias — curto prazo",
+    who: "Psicólogo organizacional e RH",
+    how: "Programa de apoio psicológico, rodízio de funções, capacitação em inteligência emocional",
+    howMuch: "Médio — contratação de profissional especializado",
+  },
+  comunicacao: {
+    what: "Melhorar canais de comunicação e práticas de liderança",
+    why: "Fator Comunicação, Ambiente e Liderança em nível elevado/crítico",
+    where: "Toda a organização",
+    when: "45 dias — curto prazo",
+    who: "Diretoria e Gestores",
+    how: "Treinamento de liderança, reuniões periódicas, canal de escuta ativa",
+    howMuch: "Médio — treinamentos e ferramentas de comunicação",
+  },
+  relacoes: {
+    what: "Fortalecer relações interpessoais no ambiente de trabalho",
+    why: "Fator Relações Interpessoais em nível elevado/crítico",
+    where: "Setores com conflitos identificados",
+    when: "60 dias — médio prazo",
+    who: "RH e Psicólogo organizacional",
+    how: "Dinâmicas de grupo, mediação de conflitos, política de convivência",
+    howMuch: "Baixo a médio — ações internas",
+  },
+  violencia: {
+    what: "Implementar programa de prevenção à violência e assédio",
+    why: "Fator Violência e Assédio em nível elevado/crítico — PRIORIDADE",
+    where: "Toda a organização",
+    when: "15 dias — URGENTE",
+    who: "Comitê de ética, RH e Jurídico",
+    how: "Canal de denúncias, política antiassédio, treinamento obrigatório, investigação de casos",
+    howMuch: "Médio a alto — estrutura de compliance",
+  },
+  seguranca: {
+    what: "Reforçar percepção e práticas de segurança no trabalho",
+    why: "Fator Segurança no Trabalho em nível elevado/crítico",
+    where: "Áreas operacionais e de risco",
+    when: "15 dias — URGENTE",
+    who: "SESMT e Gestores operacionais",
+    how: "Revisão de procedimentos, DDS, EPIs, treinamento de segurança, análise de incidentes",
+    howMuch: "Variável — conforme necessidades de EPIs e infraestrutura",
+  },
+  satisfacao: {
+    what: "Desenvolver programa de engajamento e satisfação",
+    why: "Fator Satisfação e Engajamento em nível elevado/crítico",
+    where: "Toda a organização",
+    when: "90 dias — médio prazo",
+    who: "RH e Gestão de Pessoas",
+    how: "Pesquisa de clima, plano de carreira, reconhecimento, benefícios",
+    howMuch: "Médio — programas de incentivo",
+  },
+  conciliacao: {
+    what: "Promover equilíbrio entre trabalho e vida pessoal",
+    why: "Fator Conciliação Trabalho-Vida em nível elevado/crítico",
+    where: "Toda a organização",
+    when: "60 dias — médio prazo",
+    who: "RH e Diretoria",
+    how: "Flexibilidade de horário, home office, política de desconexão digital",
+    howMuch: "Baixo — mudanças de política interna",
+  },
+};
+
 const SECTOR_OPTIONS = Object.keys(SECTOR_FACTORS);
 
 type ClassificacaoGeral = "Conforme" | "Atenção" | "Elevado" | "Crítico" | "";
@@ -127,7 +221,7 @@ const ResultadoOrganizacional = () => {
   const [recomendacoes, setRecomendacoes] = useState<string[]>([""]);
   const [factors, setFactors] = useState<Record<string, number>>({});
   const [classificacaoTecnica, setClassificacaoTecnica] = useState<ClassificacaoGeral>("");
-  const [acoes5w2h, setAcoes5w2h] = useState<Acao5W2H[]>([]);
+  const [acoes5w2hManual, setAcoes5w2hManual] = useState<Acao5W2H[]>([]);
 
   // Empresa search
   const [savedEmpresas, setSavedEmpresas] = useState<string[]>([]);
@@ -202,7 +296,7 @@ const ResultadoOrganizacional = () => {
         setClassificacaoTecnica(d.classificacaoTecnica || "");
         setConclusao(d.conclusao || "");
         setRecomendacoes(d.recomendacoes || [""]);
-        setAcoes5w2h(d.acoes5w2h || []);
+        setAcoes5w2hManual(d.acoes5w2h || []);
         toast.info(`Avaliação carregada: "${d.empresa}"${d.setorCustom || d.setor ? ` — ${d.setorCustom || d.setor}` : ""}`);
       } catch {}
     } else {
@@ -237,6 +331,27 @@ const ResultadoOrganizacional = () => {
 
   // Factors with alerts
   const factorsWithAlert = useMemo(() => activeFactors.filter((f) => (factors[f.key] || 0) > 50), [factors, activeFactors]);
+
+  // Auto-generate 5W2H actions for factors above 50%
+  const acoes5w2h = useMemo<Acao5W2H[]>(() => {
+    return factorsWithAlert.map((f) => {
+      const template = FACTOR_5W2H_TEMPLATES[f.key];
+      // Check if there's a manual override for this factor
+      const manual = acoes5w2hManual.find((a) => a.id === f.key);
+      if (manual) return manual;
+      return {
+        id: f.key,
+        what: template?.what || `Ação corretiva para ${f.label}`,
+        why: template?.why || `${f.label} em nível ${(factors[f.key] || 0) > 70 ? "crítico" : "elevado"} (${factors[f.key]}%)`,
+        where: template?.where || "A definir",
+        when: template?.when || "A definir",
+        who: template?.who || "A definir",
+        how: template?.how || "A definir",
+        howMuch: template?.howMuch || "A definir",
+        status: "pendente" as const,
+      };
+    });
+  }, [factorsWithAlert, factors, acoes5w2hManual]);
 
   const aiha = useMemo(() => {
     const avg = indiceGeral;
@@ -666,12 +781,23 @@ const ResultadoOrganizacional = () => {
 
         {/* ===== PAGE 3: 5W2H ===== */}
         <div className="print-page px-8 py-6">
-          <div className="flex items-center gap-2 mb-3">
-            <ClipboardList className="h-4 w-4 text-primary" />
-            <h3 className="text-sm font-bold text-foreground">Plano de Ação — 5W2H</h3>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <ClipboardList className="h-4 w-4 text-primary" />
+              <h3 className="text-sm font-bold text-foreground">Plano de Ação — 5W2H</h3>
+            </div>
+            <span className="text-[10px] text-muted-foreground italic print:hidden">
+              Gerado automaticamente para fatores acima de 50% • Editável
+            </span>
           </div>
           <div className="border rounded-lg p-4 bg-card">
-            <Plano5W2H acoes={acoes5w2h} onChange={setAcoes5w2h} />
+            {acoes5w2h.length > 0 ? (
+              <Plano5W2H acoes={acoes5w2h} onChange={setAcoes5w2hManual} />
+            ) : (
+              <div className="text-center py-8 text-muted-foreground text-sm">
+                Nenhum fator acima de 50%. Ações 5W2H serão geradas automaticamente quando houver fatores em nível elevado ou crítico.
+              </div>
+            )}
           </div>
         </div>
 
