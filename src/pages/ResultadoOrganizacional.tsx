@@ -332,6 +332,27 @@ const ResultadoOrganizacional = () => {
   // Factors with alerts
   const factorsWithAlert = useMemo(() => activeFactors.filter((f) => (factors[f.key] || 0) > 50), [factors, activeFactors]);
 
+  // Auto-generate 5W2H actions for factors above 50%
+  const acoes5w2h = useMemo<Acao5W2H[]>(() => {
+    return factorsWithAlert.map((f) => {
+      const template = FACTOR_5W2H_TEMPLATES[f.key];
+      // Check if there's a manual override for this factor
+      const manual = acoes5w2hManual.find((a) => a.id === f.key);
+      if (manual) return manual;
+      return {
+        id: f.key,
+        what: template?.what || `Ação corretiva para ${f.label}`,
+        why: template?.why || `${f.label} em nível ${(factors[f.key] || 0) > 70 ? "crítico" : "elevado"} (${factors[f.key]}%)`,
+        where: template?.where || "A definir",
+        when: template?.when || "A definir",
+        who: template?.who || "A definir",
+        how: template?.how || "A definir",
+        howMuch: template?.howMuch || "A definir",
+        status: "pendente" as const,
+      };
+    });
+  }, [factorsWithAlert, factors, acoes5w2hManual]);
+
   const aiha = useMemo(() => {
     const avg = indiceGeral;
     let level = 1;
