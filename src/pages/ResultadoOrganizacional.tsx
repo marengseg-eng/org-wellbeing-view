@@ -799,7 +799,6 @@ const ResultadoOrganizacional = () => {
               </div>
             )}
           </div>
-          </div>
         </div>
 
         {/* Footer with credentials */}
