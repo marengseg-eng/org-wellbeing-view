@@ -269,7 +269,7 @@ const ResultadoOrganizacional = () => {
     const key = makeStorageKey(empresa, setorCustom);
     const payload = {
       empresa, cnpj, setorCustom, setor: setorCustom, setorTipo, dataAvaliacao, numEntrevistados,
-      factors, classificacaoTecnica, conclusao, recomendacoes,
+      factors, classificacaoTecnica, conclusao, recomendacoes, acoes5w2h,
       savedAt: new Date().toISOString(),
     };
     localStorage.setItem(key, JSON.stringify(payload));
