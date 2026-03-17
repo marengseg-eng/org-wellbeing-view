@@ -786,7 +786,7 @@ const ResultadoOrganizacional = () => {
             <h3 className="text-sm font-bold text-foreground">Plano de Ação — 5W2H</h3>
           </div>
           <div className="border rounded-lg p-4 bg-card">
-            <Plano5W2H acoes={acoes5w2h} onChange={setAcoes5w2h} />
+            <Plano5W2H acoes={acoes5w2h} onChange={setAcoes5w2hManual} />
           </div>
         </div>
 
