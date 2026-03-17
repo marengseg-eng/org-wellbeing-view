@@ -14,7 +14,8 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { FactorChart } from "@/components/FactorChart";
 import { RadarFactorChart } from "@/components/RadarFactorChart";
 import { AIHAMatrix } from "@/components/AIHAMatrix";
-import { Download, Save, Printer, X, Search, AlertTriangle } from "lucide-react";
+import { Download, Save, Printer, X, Search, AlertTriangle, ClipboardList } from "lucide-react";
+import { Plano5W2H, type Acao5W2H } from "@/components/Plano5W2H";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -126,6 +127,7 @@ const ResultadoOrganizacional = () => {
   const [recomendacoes, setRecomendacoes] = useState<string[]>([""]);
   const [factors, setFactors] = useState<Record<string, number>>({});
   const [classificacaoTecnica, setClassificacaoTecnica] = useState<ClassificacaoGeral>("");
+  const [acoes5w2h, setAcoes5w2h] = useState<Acao5W2H[]>([]);
 
   // Empresa search
   const [savedEmpresas, setSavedEmpresas] = useState<string[]>([]);
@@ -200,6 +202,7 @@ const ResultadoOrganizacional = () => {
         setClassificacaoTecnica(d.classificacaoTecnica || "");
         setConclusao(d.conclusao || "");
         setRecomendacoes(d.recomendacoes || [""]);
+        setAcoes5w2h(d.acoes5w2h || []);
         toast.info(`Avaliação carregada: "${d.empresa}"${d.setorCustom || d.setor ? ` — ${d.setorCustom || d.setor}` : ""}`);
       } catch {}
     } else {
@@ -266,14 +269,14 @@ const ResultadoOrganizacional = () => {
     const key = makeStorageKey(empresa, setorCustom);
     const payload = {
       empresa, cnpj, setorCustom, setor: setorCustom, setorTipo, dataAvaliacao, numEntrevistados,
-      factors, classificacaoTecnica, conclusao, recomendacoes,
+      factors, classificacaoTecnica, conclusao, recomendacoes, acoes5w2h,
       savedAt: new Date().toISOString(),
     };
     localStorage.setItem(key, JSON.stringify(payload));
     setSavedEmpresas(getSavedEmpresas());
     setSavedSetores(getSavedSetores(empresa));
     toast.success(`Avaliação salva: "${empresa}"${setorCustom ? ` — ${setorCustom}` : ""}`);
-  }, [empresa, cnpj, setorCustom, setorTipo, dataAvaliacao, numEntrevistados, factors, classificacaoTecnica, conclusao, recomendacoes]);
+  }, [empresa, cnpj, setorCustom, setorTipo, dataAvaliacao, numEntrevistados, factors, classificacaoTecnica, conclusao, recomendacoes, acoes5w2h]);
 
   const handlePrint = useCallback(() => { window.print(); }, []);
 
@@ -405,6 +408,20 @@ const ResultadoOrganizacional = () => {
   </div>
   <div class="section"><div class="section-title">Conclusão Executiva</div><div class="conclusao">${conclusao || "—"}</div></div>
   ${recsHtml ? `<div class="section"><div class="section-title">Recomendações</div><ol>${recsHtml}</ol></div>` : ""}
+  ${acoes5w2h.length > 0 ? `<div class="section"><div class="section-title">Plano de Ação — 5W2H</div>
+    <table><thead><tr><th>#</th><th>O quê</th><th>Por quê</th><th>Onde</th><th>Quando</th><th>Quem</th><th>Como</th><th>Custo</th><th>Status</th></tr></thead><tbody>
+    ${acoes5w2h.map((a, i) => `<tr>
+      <td style="padding:8px;border-bottom:1px solid #1e293b;color:#94a3b8;text-align:center;font-weight:700;">${i + 1}</td>
+      <td style="padding:8px;border-bottom:1px solid #1e293b;color:#e2e8f0;font-size:13px;">${a.what || "—"}</td>
+      <td style="padding:8px;border-bottom:1px solid #1e293b;color:#cbd5e1;font-size:12px;">${a.why || "—"}</td>
+      <td style="padding:8px;border-bottom:1px solid #1e293b;color:#cbd5e1;font-size:12px;">${a.where || "—"}</td>
+      <td style="padding:8px;border-bottom:1px solid #1e293b;color:#cbd5e1;font-size:12px;">${a.when || "—"}</td>
+      <td style="padding:8px;border-bottom:1px solid #1e293b;color:#cbd5e1;font-size:12px;">${a.who || "—"}</td>
+      <td style="padding:8px;border-bottom:1px solid #1e293b;color:#cbd5e1;font-size:12px;">${a.how || "—"}</td>
+      <td style="padding:8px;border-bottom:1px solid #1e293b;color:#cbd5e1;font-size:12px;">${a.howMuch || "—"}</td>
+      <td style="padding:8px;border-bottom:1px solid #1e293b;color:#94a3b8;font-size:11px;font-weight:700;text-transform:uppercase;">${a.status === "pendente" ? "Pendente" : a.status === "em_andamento" ? "Em Andamento" : "Concluída"}</td>
+    </tr>`).join("")}
+    </tbody></table></div>` : ""}
   <div class="footer">Engenheiro de Segurança do Trabalho — CREA-SP: 5069572947 &nbsp;|&nbsp; Fisioterapeuta — Ergonomista — CREFITO 3/209468-F</div>
 </div></body></html>`;
 
@@ -415,7 +432,7 @@ const ResultadoOrganizacional = () => {
     a.download = `avaliacao-${empresa || "organizacional"}.html`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [empresa, cnpj, setorCustom, setorTipo, dataAvaliacao, numEntrevistados, factors, classificacaoTecnica, classificacaoEfetiva, conclusao, recomendacoes, indiceGeral, aiha, activeFactors]);
+  }, [empresa, cnpj, setorCustom, setorTipo, dataAvaliacao, numEntrevistados, factors, classificacaoTecnica, classificacaoEfetiva, conclusao, recomendacoes, indiceGeral, aiha, activeFactors, acoes5w2h]);
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -644,6 +661,17 @@ const ResultadoOrganizacional = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* ===== PAGE 3: 5W2H ===== */}
+        <div className="print-page px-8 py-6">
+          <div className="flex items-center gap-2 mb-3">
+            <ClipboardList className="h-4 w-4 text-primary" />
+            <h3 className="text-sm font-bold text-foreground">Plano de Ação — 5W2H</h3>
+          </div>
+          <div className="border rounded-lg p-4 bg-card">
+            <Plano5W2H acoes={acoes5w2h} onChange={setAcoes5w2h} />
           </div>
         </div>
 
