@@ -276,7 +276,7 @@ const ResultadoOrganizacional = () => {
     setSavedEmpresas(getSavedEmpresas());
     setSavedSetores(getSavedSetores(empresa));
     toast.success(`Avaliação salva: "${empresa}"${setorCustom ? ` — ${setorCustom}` : ""}`);
-  }, [empresa, cnpj, setorCustom, setorTipo, dataAvaliacao, numEntrevistados, factors, classificacaoTecnica, conclusao, recomendacoes]);
+  }, [empresa, cnpj, setorCustom, setorTipo, dataAvaliacao, numEntrevistados, factors, classificacaoTecnica, conclusao, recomendacoes, acoes5w2h]);
 
   const handlePrint = useCallback(() => { window.print(); }, []);
 
