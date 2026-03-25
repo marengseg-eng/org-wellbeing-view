@@ -841,7 +841,7 @@ const ResultadoOrganizacional = () => {
         </div>
 
         {/* Footer with credentials */}
-        <div className="px-8 py-4 border-t text-center space-y-0.5">
+        <div data-pdf-section className="px-8 py-4 border-t text-center space-y-0.5">
           <p className="text-[11px] text-muted-foreground">
             Engenheiro de Segurança do Trabalho — CREA-SP: 5069572947
           </p>
