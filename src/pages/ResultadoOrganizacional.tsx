@@ -404,11 +404,12 @@ const ResultadoOrganizacional = () => {
   const handleExportPDF = useCallback(async () => {
     if (!reportRef.current) return;
     const el = reportRef.current;
-    const MARGIN_MM = 6;
+    const MARGIN_MM = 10;
     const A4_W = 210;
     const A4_H = 297;
     const usableW = A4_W - MARGIN_MM * 2;
     const usableH = A4_H - MARGIN_MM * 2;
+    const SECTION_GAP_MM = 4;
 
     const origWidth = el.style.width;
     const origMaxWidth = el.style.maxWidth;
@@ -427,27 +428,65 @@ const ResultadoOrganizacional = () => {
     el.style.margin = "0";
 
     try {
-      const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: "#ffffff", width: 1400, windowWidth: 1400, scrollX: 0, scrollY: 0, x: 0, y: 0 });
       const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const pxPerMM = canvas.width / usableW;
-      const sliceHeightPx = Math.floor(usableH * pxPerMM);
-      let heightLeft = canvas.height;
-      let page = 0;
-      while (heightLeft > 0) {
-        const currentSlicePx = Math.min(sliceHeightPx, heightLeft);
-        const currentSliceMM = currentSlicePx / pxPerMM;
-        if (page > 0) pdf.addPage();
-        const tempCanvas = document.createElement("canvas");
-        tempCanvas.width = canvas.width;
-        tempCanvas.height = currentSlicePx;
-        const ctx = tempCanvas.getContext("2d")!;
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, canvas.width, currentSlicePx);
-        ctx.drawImage(canvas, 0, canvas.height - heightLeft, canvas.width, currentSlicePx, 0, 0, canvas.width, currentSlicePx);
-        pdf.addImage(tempCanvas.toDataURL("image/png"), "PNG", MARGIN_MM, MARGIN_MM, usableW, currentSliceMM);
-        heightLeft -= currentSlicePx;
-        page++;
+      let currentY = MARGIN_MM;
+
+      // Get logical sections (print-page divs, header, footer, alerts)
+      const sections = Array.from(el.querySelectorAll('[data-pdf-section]')) as HTMLElement[];
+      
+      // If no sections found, fallback to direct children
+      const sectionElements = sections.length > 0 ? sections : Array.from(el.children).filter(c => {
+        const e = c as HTMLElement;
+        return e.offsetHeight > 0 && !e.classList.contains('print:hidden') && e.style.display !== 'none';
+      }) as HTMLElement[];
+
+      for (let i = 0; i < sectionElements.length; i++) {
+        const section = sectionElements[i];
+        const canvas = await html2canvas(section, { 
+          scale: 2, useCORS: true, backgroundColor: "#ffffff", 
+          width: 1400, windowWidth: 1400, scrollX: 0, scrollY: 0 
+        });
+        
+        const scaleFactor = usableW / (canvas.width / 2);
+        const heightMM = (canvas.height / 2) * scaleFactor;
+        const remainingSpace = usableH - (currentY - MARGIN_MM);
+
+        // If section doesn't fit and we're not at the top, start new page
+        if (heightMM > remainingSpace && currentY > MARGIN_MM) {
+          pdf.addPage();
+          currentY = MARGIN_MM;
+        }
+
+        // If section is taller than a full page, split it
+        if (heightMM > usableH) {
+          const pxPerMM = canvas.width / usableW;
+          const sliceHeightPx = Math.floor(usableH * pxPerMM);
+          let hLeft = canvas.height;
+          let slicePage = 0;
+          while (hLeft > 0) {
+            const curSlicePx = Math.min(sliceHeightPx, hLeft);
+            const curSliceMM = curSlicePx / pxPerMM;
+            if (slicePage > 0 || currentY > MARGIN_MM) { pdf.addPage(); currentY = MARGIN_MM; }
+            const tempCanvas = document.createElement("canvas");
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = curSlicePx;
+            const ctx = tempCanvas.getContext("2d")!;
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, curSlicePx);
+            ctx.drawImage(canvas, 0, canvas.height - hLeft, canvas.width, curSlicePx, 0, 0, canvas.width, curSlicePx);
+            pdf.addImage(tempCanvas.toDataURL("image/png"), "PNG", MARGIN_MM, currentY, usableW, curSliceMM);
+            hLeft -= curSlicePx;
+            slicePage++;
+          }
+          currentY = MARGIN_MM; // Reset for next section on new page
+          if (i < sectionElements.length - 1) pdf.addPage();
+        } else {
+          const imgData = canvas.toDataURL("image/png");
+          pdf.addImage(imgData, "PNG", MARGIN_MM, currentY, usableW, heightMM);
+          currentY += heightMM + SECTION_GAP_MM;
+        }
       }
+
       pdf.save(`avaliacao-${empresa || "organizacional"}.pdf`);
     } finally {
       el.style.width = origWidth;
