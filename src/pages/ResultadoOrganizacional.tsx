@@ -599,7 +599,7 @@ const ResultadoOrganizacional = () => {
       <div ref={reportRef} className="w-full bg-white flex-1" style={{ maxWidth: "1400px", margin: "0 auto" }}>
 
         {/* ===== HEADER ===== */}
-        <div className="px-8 py-5 flex items-center gap-6 rounded-t-lg" style={{ background: "#0f172a" }}>
+        <div data-pdf-section className="px-8 py-5 flex items-center gap-6 rounded-t-lg" style={{ background: "#0f172a" }}>
           <div className="flex-shrink-0">
             <img src={logoLbm} alt="LBM BORATTI" className="h-14 w-auto max-w-[220px] object-contain" />
           </div>
@@ -622,7 +622,7 @@ const ResultadoOrganizacional = () => {
 
         {/* ===== ALERTS ===== */}
         {factorsWithAlert.length > 0 && (
-          <div className="px-8 py-2 bg-destructive/5 border-b border-destructive/20 flex items-center gap-2 flex-wrap">
+          <div data-pdf-section className="px-8 py-2 bg-destructive/5 border-b border-destructive/20 flex items-center gap-2 flex-wrap">
             <AlertTriangle className="h-4 w-4 text-destructive" />
             <span className="text-xs font-semibold text-destructive">Alertas:</span>
             {factorsWithAlert.map((f) => (
@@ -634,7 +634,7 @@ const ResultadoOrganizacional = () => {
         )}
 
         {/* ===== PAGE 1: Identification + Index ===== */}
-        <div className="print-page px-8 py-6 flex flex-col">
+        <div data-pdf-section className="print-page px-8 py-6 flex flex-col">
           <div className="grid grid-cols-3 gap-6 flex-1">
             <div className="col-span-2 flex flex-col">
               <div className="grid grid-cols-3 gap-x-6 gap-y-4">
@@ -750,7 +750,7 @@ const ResultadoOrganizacional = () => {
         </div>
 
         {/* ===== PAGE 2: Charts + AIHA + Conclusion ===== */}
-        <div className="print-page px-8 py-6 flex flex-col">
+        <div data-pdf-section className="print-page px-8 py-6 flex flex-col">
           {/* Tabs for Bar / Radar */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
             <div className="flex items-center justify-between mb-2">
@@ -825,24 +825,18 @@ const ResultadoOrganizacional = () => {
         </div>
 
         {/* ===== PAGE 3: 5W2H ===== */}
-        <div className="print-page px-8 py-6">
+        <div data-pdf-section className="print-page px-8 py-6">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <ClipboardList className="h-4 w-4 text-primary" />
               <h3 className="text-sm font-bold text-foreground">Plano de Ação — 5W2H</h3>
             </div>
             <span className="text-[10px] text-muted-foreground italic print:hidden">
-              Gerado automaticamente para fatores acima de 50% • Editável
+              Gerado automaticamente para todos os fatores • Editável
             </span>
           </div>
           <div className="border rounded-lg p-4 bg-card">
-            {acoes5w2h.length > 0 ? (
-              <Plano5W2H acoes={acoes5w2h} onChange={setAcoes5w2hManual} />
-            ) : (
-              <div className="text-center py-8 text-muted-foreground text-sm">
-                Nenhum fator acima de 50%. Ações 5W2H serão geradas automaticamente quando houver fatores em nível elevado ou crítico.
-              </div>
-            )}
+            <Plano5W2H acoes={acoes5w2h} onChange={setAcoes5w2hManual} />
           </div>
         </div>
 
@@ -859,11 +853,12 @@ const ResultadoOrganizacional = () => {
 
       {/* Action bar - fixed bottom */}
       <div className="print:hidden sticky bottom-0 w-full border-t bg-background/95 backdrop-blur py-3 z-50">
-        <div className="flex items-center justify-center gap-3 px-8" style={{ maxWidth: "1400px", margin: "0 auto" }}>
-          <Button onClick={handleSave} className="gap-2" size="sm"><Save className="h-4 w-4" />Salvar</Button>
-          <Button onClick={handlePrint} variant="outline" size="sm" className="gap-2"><Printer className="h-4 w-4" />Imprimir</Button>
-          <Button onClick={handleExportHTML} variant="outline" size="sm" className="gap-2"><Download className="h-4 w-4" />HTML</Button>
-          <Button onClick={handleExportPDF} variant="outline" size="sm" className="gap-2"><Download className="h-4 w-4" />PDF</Button>
+        <div className="flex items-center justify-center gap-2 sm:gap-3 px-4 sm:px-8 flex-wrap" style={{ maxWidth: "1400px", margin: "0 auto" }}>
+          <Button onClick={handleSave} className="gap-1.5 text-xs sm:text-sm" size="sm"><Save className="h-3.5 w-3.5 sm:h-4 sm:w-4" /><span className="hidden sm:inline">Salvar</span><span className="sm:hidden">Salvar</span></Button>
+          <Button onClick={handlePrint} variant="outline" size="sm" className="gap-1.5 text-xs sm:text-sm"><Printer className="h-3.5 w-3.5 sm:h-4 sm:w-4" /><span className="hidden sm:inline">Imprimir</span></Button>
+          <Button onClick={handleExportHTML} variant="outline" size="sm" className="gap-1.5 text-xs sm:text-sm"><Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" /><span className="hidden sm:inline">HTML</span><span className="sm:hidden">HTML</span></Button>
+          <Button onClick={handleExportPDF} variant="outline" size="sm" className="gap-1.5 text-xs sm:text-sm"><Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" /><span className="hidden sm:inline">PDF</span><span className="sm:hidden">PDF</span></Button>
+          <Button onClick={() => setActiveTab("fatores")} variant="ghost" size="sm" className="gap-1.5 text-xs sm:text-sm"><ClipboardList className="h-3.5 w-3.5 sm:h-4 sm:w-4" /><span className="hidden sm:inline">5W2H</span></Button>
         </div>
       </div>
     </div>
