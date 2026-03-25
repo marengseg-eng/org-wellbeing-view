@@ -788,53 +788,56 @@ const ResultadoOrganizacional = () => {
                 <AIHAMatrix data={aiha} onChange={(d) => {/* AIHA is synced with IGP, read-only for now */}} />
               </div>
             </div>
-            <div className="flex flex-col gap-4">
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-bold text-foreground">Conclusão Executiva</h3>
-                  <span className="text-[10px] text-muted-foreground">{conclusao.length}/2000</span>
-                </div>
-                <div className="border rounded-lg p-3 bg-card">
-                  <Textarea
-                    value={conclusao} onChange={(e) => setConclusao(e.target.value)}
-                    placeholder="Resumo executivo da avaliação psicossocial organizacional..."
-                    className="border-0 p-0 resize-none text-sm bg-card focus-visible:ring-0 min-h-[150px]"
-                    maxLength={2000}
-                  />
-                </div>
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-bold text-foreground">Conclusão Executiva</h3>
+                <span className="text-[10px] text-muted-foreground">{conclusao.length}/2000</span>
               </div>
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-bold text-foreground">Recomendações</h3>
-                  <Button type="button" variant="outline" size="sm" onClick={addRecomendacao} className="print:hidden h-7 text-xs gap-1">+ Item</Button>
-                </div>
-                <div className="border rounded-lg p-3 bg-card space-y-2">
-                  {recomendacoes.map((rec, i) => (
-                    <div key={i} className="flex items-start gap-2">
-                      <span className="text-xs font-bold text-muted-foreground mt-2 min-w-[20px]">{i + 1}.</span>
-                      <Input value={rec} onChange={(e) => updateRecomendacao(i, e.target.value)} placeholder={`Recomendação ${i + 1}...`} className="h-8 text-sm bg-card border-border flex-1" />
-                      {recomendacoes.length > 1 && (
-                        <button onClick={() => removeRecomendacao(i)} className="print:hidden text-muted-foreground hover:text-destructive mt-1.5" title="Remover"><X className="h-4 w-4" /></button>
-                      )}
-                    </div>
-                  ))}
-                </div>
+              <div className="border rounded-lg p-3 bg-card">
+                <Textarea
+                  value={conclusao} onChange={(e) => setConclusao(e.target.value)}
+                  placeholder="Resumo executivo da avaliação psicossocial organizacional..."
+                  className="border-0 p-0 resize-none text-sm bg-card focus-visible:ring-0 min-h-[150px]"
+                  maxLength={2000}
+                />
               </div>
+            </div>
+          </div>
+
+          {/* Recomendações — separate section */}
+          <div className="mt-4">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-bold text-foreground">Recomendações</h3>
+              <Button type="button" variant="outline" size="sm" onClick={addRecomendacao} className="print:hidden h-7 text-xs gap-1">+ Item</Button>
+            </div>
+            <div className="border rounded-lg p-3 bg-card space-y-2">
+              {recomendacoes.map((rec, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <span className="text-xs font-bold text-muted-foreground mt-2 min-w-[20px]">{i + 1}.</span>
+                  <Input value={rec} onChange={(e) => updateRecomendacao(i, e.target.value)} placeholder={`Recomendação ${i + 1}...`} className="h-8 text-sm bg-card border-border flex-1" />
+                  {recomendacoes.length > 1 && (
+                    <button onClick={() => removeRecomendacao(i)} className="print:hidden text-muted-foreground hover:text-destructive mt-1.5" title="Remover"><X className="h-4 w-4" /></button>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* ===== PAGE 3: 5W2H ===== */}
+        {/* ===== PAGE 3: 5W2H alinhado com recomendações ===== */}
         <div data-pdf-section className="print-page px-8 py-6">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2">
               <ClipboardList className="h-4 w-4 text-primary" />
               <h3 className="text-sm font-bold text-foreground">Plano de Ação — 5W2H</h3>
             </div>
             <span className="text-[10px] text-muted-foreground italic print:hidden">
-              Gerado automaticamente para todos os fatores • Editável
+              Alinhado às recomendações • Editável
             </span>
           </div>
+          <p className="text-[11px] text-muted-foreground mb-3">
+            Ações detalhadas para cada fator psicossocial, alinhadas às recomendações acima.
+          </p>
           <div className="border rounded-lg p-4 bg-card">
             <Plano5W2H acoes={acoes5w2h} onChange={setAcoes5w2hManual} />
           </div>
