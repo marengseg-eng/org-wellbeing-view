@@ -232,7 +232,7 @@ const ResultadoOrganizacional = () => {
   const [showSetorList, setShowSetorList] = useState(false);
   const setorInputRef = useRef<HTMLDivElement>(null);
 
-  const [activeTab, setActiveTab] = useState("fatores");
+  
 
   useEffect(() => { setSavedEmpresas(getSavedEmpresas()); }, []);
 
