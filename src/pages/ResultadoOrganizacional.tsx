@@ -565,7 +565,11 @@ const ResultadoOrganizacional = () => {
       ${classificacaoTecnica ? `<div style="margin-top:12px;font-size:11px;color:#94a3b8;">Classificação Técnica: <strong style="color:#e2e8f0;">${classificacaoTecnica}</strong></div>` : ""}
     </div>
   </div>
-  ${chartImgBase64 ? `<div class="section"><div class="section-title">Gráfico de Fatores</div><img src="${chartImgBase64}" alt="Gráfico" style="width:100%;max-width:100%;border-radius:8px;margin-top:8px;" /></div>` : ""}
+  ${chartImgBase64 || radarImgBase64 ? `<div class="section"><div class="section-title">Gráficos de Fatores</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px;">
+      ${chartImgBase64 ? `<div><p style="font-size:12px;font-weight:700;color:#94a3b8;margin-bottom:6px;text-transform:uppercase;">Barras</p><img src="${chartImgBase64}" alt="Gráfico de Barras" style="width:100%;border-radius:8px;" /></div>` : ""}
+      ${radarImgBase64 ? `<div><p style="font-size:12px;font-weight:700;color:#94a3b8;margin-bottom:6px;text-transform:uppercase;">Radar</p><img src="${radarImgBase64}" alt="Gráfico Radar" style="width:100%;border-radius:8px;" /></div>` : ""}
+    </div></div>` : ""}
   <div class="section"><div class="section-title">Matriz de Risco — AIHA</div>
     <table style="border-collapse:separate;border-spacing:3px;max-width:350px;"><thead><tr><th style="width:36px;"></th><th style="text-align:center;">1</th><th style="text-align:center;">2</th><th style="text-align:center;">3</th><th style="text-align:center;">4</th><th style="text-align:center;">5</th></tr></thead><tbody>${matrixRows}</tbody></table>
     <p style="margin-top:12px;font-size:14px;color:#cbd5e1;">P=${aiha.probabilidade} × S=${aiha.severidade} = <strong>${aiha.probabilidade * aiha.severidade}</strong> — <span style="color:${sColor};font-weight:700;">${aiha.classificacao}</span></p>
