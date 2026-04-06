@@ -759,35 +759,24 @@ const ResultadoOrganizacional = () => {
 
         {/* ===== PAGE 2: Charts + AIHA + Conclusion ===== */}
         <div data-pdf-section className="print-page px-8 py-6 flex flex-col">
-          {/* Tabs for Bar / Radar */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-bold text-foreground">Distribuição dos Fatores Psicossociais</h3>
-              <TabsList className="print:hidden">
-                <TabsTrigger value="fatores">
-                  Barras
-                </TabsTrigger>
-                <TabsTrigger value="radar">
-                  Radar
-                  {factorsWithAlert.length > 0 && (
-                    <span className="ml-1.5 inline-flex items-center justify-center rounded-full bg-destructive text-white text-[9px] font-bold h-4 w-4">
-                      {factorsWithAlert.length}
-                    </span>
-                  )}
-                </TabsTrigger>
-              </TabsList>
+          <h3 className="text-sm font-bold text-foreground mb-3">Distribuição dos Fatores Psicossociais</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div className="border rounded-lg p-3 bg-card">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Barras</p>
+              <FactorChart factors={chartData} />
             </div>
-            <TabsContent value="fatores">
-              <div className="border rounded-lg p-3 bg-card">
-                <FactorChart factors={chartData} />
-              </div>
-            </TabsContent>
-            <TabsContent value="radar">
-              <div className="border rounded-lg p-3 bg-card">
-                <RadarFactorChart factors={radarData} />
-              </div>
-            </TabsContent>
-          </Tabs>
+            <div className="border rounded-lg p-3 bg-card">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                Radar
+                {factorsWithAlert.length > 0 && (
+                  <span className="ml-1.5 inline-flex items-center justify-center rounded-full bg-destructive text-white text-[9px] font-bold h-4 w-4">
+                    {factorsWithAlert.length}
+                  </span>
+                )}
+              </p>
+              <RadarFactorChart factors={radarData} />
+            </div>
+          </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col">
