@@ -502,9 +502,13 @@ const ResultadoOrganizacional = () => {
     const sColor = getStatusColor(classificacaoEfetiva);
 
     let chartImgBase64 = "";
-    const chartContainer = reportRef.current?.querySelector(".recharts-responsive-container");
-    if (chartContainer) {
-      try { const c = await html2canvas(chartContainer as HTMLElement, { scale: 2, useCORS: true, backgroundColor: "#0f1729" }); chartImgBase64 = c.toDataURL("image/png"); } catch {}
+    let radarImgBase64 = "";
+    const chartContainers = reportRef.current?.querySelectorAll(".recharts-responsive-container");
+    if (chartContainers && chartContainers.length >= 1) {
+      try { const c = await html2canvas(chartContainers[0] as HTMLElement, { scale: 2, useCORS: true, backgroundColor: "#0f1729" }); chartImgBase64 = c.toDataURL("image/png"); } catch {}
+    }
+    if (chartContainers && chartContainers.length >= 2) {
+      try { const c = await html2canvas(chartContainers[1] as HTMLElement, { scale: 2, useCORS: true, backgroundColor: "#0f1729" }); radarImgBase64 = c.toDataURL("image/png"); } catch {}
     }
 
     const factorRows = activeFactors.map((f) => {
