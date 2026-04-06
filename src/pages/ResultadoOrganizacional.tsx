@@ -821,7 +821,7 @@ const ResultadoOrganizacional = () => {
         </div>
 
         {/* ===== PAGE 3: 5W2H alinhado com recomendações ===== */}
-        <div data-pdf-section className="print-page px-8 py-6">
+        <div data-pdf-section data-section-5w2h className="print-page px-8 py-6">
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2">
               <ClipboardList className="h-4 w-4 text-primary" />
