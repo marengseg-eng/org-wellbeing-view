@@ -857,7 +857,7 @@ const ResultadoOrganizacional = () => {
           <Button onClick={handlePrint} variant="outline" size="sm" className="gap-1.5 text-xs sm:text-sm"><Printer className="h-3.5 w-3.5 sm:h-4 sm:w-4" /><span className="hidden sm:inline">Imprimir</span></Button>
           <Button onClick={handleExportHTML} variant="outline" size="sm" className="gap-1.5 text-xs sm:text-sm"><Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" /><span className="hidden sm:inline">HTML</span><span className="sm:hidden">HTML</span></Button>
           <Button onClick={handleExportPDF} variant="outline" size="sm" className="gap-1.5 text-xs sm:text-sm"><Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" /><span className="hidden sm:inline">PDF</span><span className="sm:hidden">PDF</span></Button>
-          <Button onClick={() => setActiveTab("fatores")} variant="ghost" size="sm" className="gap-1.5 text-xs sm:text-sm"><ClipboardList className="h-3.5 w-3.5 sm:h-4 sm:w-4" /><span className="hidden sm:inline">5W2H</span></Button>
+          <Button onClick={() => document.querySelector('[data-section-5w2h]')?.scrollIntoView({ behavior: 'smooth' })} variant="ghost" size="sm" className="gap-1.5 text-xs sm:text-sm"><ClipboardList className="h-3.5 w-3.5 sm:h-4 sm:w-4" /><span className="hidden sm:inline">5W2H</span></Button>
         </div>
       </div>
     </div>
