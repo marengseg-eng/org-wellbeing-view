@@ -18,7 +18,6 @@ import { Download, Save, Printer, X, Search, AlertTriangle, ClipboardList } from
 import { Plano5W2H, type Acao5W2H } from "@/components/Plano5W2H";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import html2canvas from "html2canvas";
@@ -233,7 +232,7 @@ const ResultadoOrganizacional = () => {
   const [showSetorList, setShowSetorList] = useState(false);
   const setorInputRef = useRef<HTMLDivElement>(null);
 
-  const [activeTab, setActiveTab] = useState("fatores");
+  
 
   useEffect(() => { setSavedEmpresas(getSavedEmpresas()); }, []);
 
@@ -502,9 +501,13 @@ const ResultadoOrganizacional = () => {
     const sColor = getStatusColor(classificacaoEfetiva);
 
     let chartImgBase64 = "";
-    const chartContainer = reportRef.current?.querySelector(".recharts-responsive-container");
-    if (chartContainer) {
-      try { const c = await html2canvas(chartContainer as HTMLElement, { scale: 2, useCORS: true, backgroundColor: "#0f1729" }); chartImgBase64 = c.toDataURL("image/png"); } catch {}
+    let radarImgBase64 = "";
+    const chartContainers = reportRef.current?.querySelectorAll(".recharts-responsive-container");
+    if (chartContainers && chartContainers.length >= 1) {
+      try { const c = await html2canvas(chartContainers[0] as HTMLElement, { scale: 2, useCORS: true, backgroundColor: "#0f1729" }); chartImgBase64 = c.toDataURL("image/png"); } catch {}
+    }
+    if (chartContainers && chartContainers.length >= 2) {
+      try { const c = await html2canvas(chartContainers[1] as HTMLElement, { scale: 2, useCORS: true, backgroundColor: "#0f1729" }); radarImgBase64 = c.toDataURL("image/png"); } catch {}
     }
 
     const factorRows = activeFactors.map((f) => {
@@ -561,7 +564,11 @@ const ResultadoOrganizacional = () => {
       ${classificacaoTecnica ? `<div style="margin-top:12px;font-size:11px;color:#94a3b8;">Classificação Técnica: <strong style="color:#e2e8f0;">${classificacaoTecnica}</strong></div>` : ""}
     </div>
   </div>
-  ${chartImgBase64 ? `<div class="section"><div class="section-title">Gráfico de Fatores</div><img src="${chartImgBase64}" alt="Gráfico" style="width:100%;max-width:100%;border-radius:8px;margin-top:8px;" /></div>` : ""}
+  ${chartImgBase64 || radarImgBase64 ? `<div class="section"><div class="section-title">Gráficos de Fatores</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px;">
+      ${chartImgBase64 ? `<div><p style="font-size:12px;font-weight:700;color:#94a3b8;margin-bottom:6px;text-transform:uppercase;">Barras</p><img src="${chartImgBase64}" alt="Gráfico de Barras" style="width:100%;border-radius:8px;" /></div>` : ""}
+      ${radarImgBase64 ? `<div><p style="font-size:12px;font-weight:700;color:#94a3b8;margin-bottom:6px;text-transform:uppercase;">Radar</p><img src="${radarImgBase64}" alt="Gráfico Radar" style="width:100%;border-radius:8px;" /></div>` : ""}
+    </div></div>` : ""}
   <div class="section"><div class="section-title">Matriz de Risco — AIHA</div>
     <table style="border-collapse:separate;border-spacing:3px;max-width:350px;"><thead><tr><th style="width:36px;"></th><th style="text-align:center;">1</th><th style="text-align:center;">2</th><th style="text-align:center;">3</th><th style="text-align:center;">4</th><th style="text-align:center;">5</th></tr></thead><tbody>${matrixRows}</tbody></table>
     <p style="margin-top:12px;font-size:14px;color:#cbd5e1;">P=${aiha.probabilidade} × S=${aiha.severidade} = <strong>${aiha.probabilidade * aiha.severidade}</strong> — <span style="color:${sColor};font-weight:700;">${aiha.classificacao}</span></p>
@@ -751,35 +758,24 @@ const ResultadoOrganizacional = () => {
 
         {/* ===== PAGE 2: Charts + AIHA + Conclusion ===== */}
         <div data-pdf-section className="print-page px-8 py-6 flex flex-col">
-          {/* Tabs for Bar / Radar */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-bold text-foreground">Distribuição dos Fatores Psicossociais</h3>
-              <TabsList className="print:hidden">
-                <TabsTrigger value="fatores">
-                  Barras
-                </TabsTrigger>
-                <TabsTrigger value="radar">
-                  Radar
-                  {factorsWithAlert.length > 0 && (
-                    <span className="ml-1.5 inline-flex items-center justify-center rounded-full bg-destructive text-white text-[9px] font-bold h-4 w-4">
-                      {factorsWithAlert.length}
-                    </span>
-                  )}
-                </TabsTrigger>
-              </TabsList>
+          <h3 className="text-sm font-bold text-foreground mb-3">Distribuição dos Fatores Psicossociais</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div className="border rounded-lg p-3 bg-card">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Barras</p>
+              <FactorChart factors={chartData} />
             </div>
-            <TabsContent value="fatores">
-              <div className="border rounded-lg p-3 bg-card">
-                <FactorChart factors={chartData} />
-              </div>
-            </TabsContent>
-            <TabsContent value="radar">
-              <div className="border rounded-lg p-3 bg-card">
-                <RadarFactorChart factors={radarData} />
-              </div>
-            </TabsContent>
-          </Tabs>
+            <div className="border rounded-lg p-3 bg-card">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                Radar
+                {factorsWithAlert.length > 0 && (
+                  <span className="ml-1.5 inline-flex items-center justify-center rounded-full bg-destructive text-white text-[9px] font-bold h-4 w-4">
+                    {factorsWithAlert.length}
+                  </span>
+                )}
+              </p>
+              <RadarFactorChart factors={radarData} />
+            </div>
+          </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col">
@@ -825,7 +821,7 @@ const ResultadoOrganizacional = () => {
         </div>
 
         {/* ===== PAGE 3: 5W2H alinhado com recomendações ===== */}
-        <div data-pdf-section className="print-page px-8 py-6">
+        <div data-pdf-section data-section-5w2h className="print-page px-8 py-6">
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2">
               <ClipboardList className="h-4 w-4 text-primary" />
@@ -861,7 +857,7 @@ const ResultadoOrganizacional = () => {
           <Button onClick={handlePrint} variant="outline" size="sm" className="gap-1.5 text-xs sm:text-sm"><Printer className="h-3.5 w-3.5 sm:h-4 sm:w-4" /><span className="hidden sm:inline">Imprimir</span></Button>
           <Button onClick={handleExportHTML} variant="outline" size="sm" className="gap-1.5 text-xs sm:text-sm"><Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" /><span className="hidden sm:inline">HTML</span><span className="sm:hidden">HTML</span></Button>
           <Button onClick={handleExportPDF} variant="outline" size="sm" className="gap-1.5 text-xs sm:text-sm"><Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" /><span className="hidden sm:inline">PDF</span><span className="sm:hidden">PDF</span></Button>
-          <Button onClick={() => setActiveTab("fatores")} variant="ghost" size="sm" className="gap-1.5 text-xs sm:text-sm"><ClipboardList className="h-3.5 w-3.5 sm:h-4 sm:w-4" /><span className="hidden sm:inline">5W2H</span></Button>
+          <Button onClick={() => document.querySelector('[data-section-5w2h]')?.scrollIntoView({ behavior: 'smooth' })} variant="ghost" size="sm" className="gap-1.5 text-xs sm:text-sm"><ClipboardList className="h-3.5 w-3.5 sm:h-4 sm:w-4" /><span className="hidden sm:inline">5W2H</span></Button>
         </div>
       </div>
     </div>
