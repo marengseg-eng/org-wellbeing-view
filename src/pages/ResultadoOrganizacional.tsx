@@ -18,7 +18,6 @@ import { Download, Save, Printer, X, Search, AlertTriangle, ClipboardList } from
 import { Plano5W2H, type Acao5W2H } from "@/components/Plano5W2H";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import html2canvas from "html2canvas";
