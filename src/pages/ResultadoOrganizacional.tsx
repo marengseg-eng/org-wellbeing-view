@@ -535,7 +535,7 @@ const ResultadoOrganizacional = () => {
 
     let matrixRows = "";
     for (let p = 5; p >= 1; p--) {
-      let cells = `<td style="width:36px;text-align:center;font-weight:700;font-size:12px;color:#94a3b8;padding:4px;">${p}</td>`;
+      let cells = `<td style="width:36px;text-align:center;font-weight:700;font-size:12px;color:${textMuted};padding:4px;">${p}</td>`;
       for (let s = 1; s <= 5; s++) {
         const cr = p * s;
         const isSelected = aiha.probabilidade === p && aiha.severidade === s;
