@@ -496,7 +496,7 @@ const ResultadoOrganizacional = () => {
       textareas.forEach((ta, i) => { ta.style.height = origHeights[i]; });
       hiddenEls.forEach((h, i) => { (h as HTMLElement).style.display = hiddenOrigDisplay[i]; });
     }
-  }, [empresa]);
+  }, [empresa, isDark]);
 
   const handleExportHTML = useCallback(async () => {
     const barColor = (v: number) => { if (v <= 30) return "#22c55e"; if (v <= 50) return "#eab308"; if (v <= 70) return "#f97316"; return "#ef4444"; };
