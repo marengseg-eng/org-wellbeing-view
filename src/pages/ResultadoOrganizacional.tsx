@@ -524,10 +524,10 @@ const ResultadoOrganizacional = () => {
       const v = factors[f.key] || 0;
       const color = barColor(v);
       return `<tr>
-        <td style="padding:10px 12px;border-bottom:1px solid #1e293b;font-size:14px;width:45%;color:#e2e8f0;">${f.label}</td>
-        <td style="padding:10px 12px;border-bottom:1px solid #1e293b;width:8%;text-align:center;font-size:11px;color:#94a3b8;">×${f.weight}</td>
-        <td style="padding:10px 12px;border-bottom:1px solid #1e293b;width:35%;"><div style="background:#1e293b;border-radius:6px;height:22px;position:relative;overflow:hidden;"><div style="background:${color};height:100%;width:${v}%;border-radius:6px;"></div></div></td>
-        <td style="padding:10px 12px;border-bottom:1px solid #1e293b;font-weight:700;color:${color};text-align:center;font-size:14px;width:10%;">${v}%</td>
+        <td style="padding:10px 12px;border-bottom:1px solid ${borderC};font-size:14px;width:45%;color:${textMain};">${f.label}</td>
+        <td style="padding:10px 12px;border-bottom:1px solid ${borderC};width:8%;text-align:center;font-size:11px;color:${textMuted};">×${f.weight}</td>
+        <td style="padding:10px 12px;border-bottom:1px solid ${borderC};width:35%;"><div style="background:${barBg};border-radius:6px;height:22px;position:relative;overflow:hidden;"><div style="background:${color};height:100%;width:${v}%;border-radius:6px;"></div></div></td>
+        <td style="padding:10px 12px;border-bottom:1px solid ${borderC};font-weight:700;color:${color};text-align:center;font-size:14px;width:10%;">${v}%</td>
       </tr>`;
     }).join("\n");
 
