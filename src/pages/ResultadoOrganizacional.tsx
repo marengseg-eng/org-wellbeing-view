@@ -221,6 +221,7 @@ const ResultadoOrganizacional = () => {
   const [factors, setFactors] = useState<Record<string, number>>({});
   const [classificacaoTecnica, setClassificacaoTecnica] = useState<ClassificacaoGeral>("");
   const [acoes5w2hManual, setAcoes5w2hManual] = useState<Acao5W2H[]>([]);
+  const [isDark, setIsDark] = useState(true);
 
   // Empresa search
   const [savedEmpresas, setSavedEmpresas] = useState<string[]>([]);
