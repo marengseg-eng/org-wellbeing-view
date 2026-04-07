@@ -499,10 +499,16 @@ const ResultadoOrganizacional = () => {
   }, [empresa, isDark]);
 
   const handleExportHTML = useCallback(async () => {
+    const dark = isDark;
+    const bg = dark ? "#0b1120" : "#f8fafc";
+    const cardBg = dark ? "#0f172a" : "#ffffff";
+    const textMain = dark ? "#e2e8f0" : "#1e293b";
+    const textMuted = dark ? "#94a3b8" : "#64748b";
+    const textSub = dark ? "#cbd5e1" : "#475569";
+    const borderC = dark ? "#1e293b" : "#e2e8f0";
+    const barBg = dark ? "#1e293b" : "#e2e8f0";
     const barColor = (v: number) => { if (v <= 30) return "#22c55e"; if (v <= 50) return "#eab308"; if (v <= 70) return "#f97316"; return "#ef4444"; };
     const sColor = getStatusColor(classificacaoEfetiva);
-
-    let chartImgBase64 = "";
     let radarImgBase64 = "";
     const chartContainers = reportRef.current?.querySelectorAll(".recharts-responsive-container");
     if (chartContainers && chartContainers.length >= 1) {
