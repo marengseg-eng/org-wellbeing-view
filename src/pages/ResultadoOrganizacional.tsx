@@ -442,8 +442,9 @@ const ResultadoOrganizacional = () => {
 
       for (let i = 0; i < sectionElements.length; i++) {
         const section = sectionElements[i];
+        const bgColor = isDark ? "#0b1120" : "#ffffff";
         const canvas = await html2canvas(section, { 
-          scale: 2, useCORS: true, backgroundColor: "#ffffff", 
+          scale: 2, useCORS: true, backgroundColor: bgColor, 
           width: 1400, windowWidth: 1400, scrollX: 0, scrollY: 0 
         });
         
