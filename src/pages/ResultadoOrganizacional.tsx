@@ -603,8 +603,8 @@ const ResultadoOrganizacional = () => {
   }, [empresa, cnpj, setorCustom, setorTipo, dataAvaliacao, numEntrevistados, factors, classificacaoTecnica, classificacaoEfetiva, conclusao, recomendacoes, indiceGeral, aiha, activeFactors, acoes5w2h]);
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <div ref={reportRef} className="w-full bg-white flex-1" style={{ maxWidth: "1400px", margin: "0 auto" }}>
+    <div className={cn("min-h-screen flex flex-col transition-colors duration-300", isDark ? "bg-[#0b1120]" : "bg-gray-50")}>
+      <div ref={reportRef} className={cn("w-full flex-1 transition-colors duration-300", isDark ? "bg-[#0b1120] text-gray-100" : "bg-white text-gray-900")} style={{ maxWidth: "1400px", margin: "0 auto" }}>
 
         {/* ===== HEADER ===== */}
         <div data-pdf-section className="px-8 py-5 flex items-center gap-6 rounded-t-lg" style={{ background: "#0f172a" }}>
@@ -616,6 +616,21 @@ const ResultadoOrganizacional = () => {
             <p className="text-[11px] text-white/50 mt-0.5">Gerenciamento de Riscos Psicossociais — NR-1</p>
           </div>
           <div className="flex-shrink-0 flex items-center gap-3">
+            {/* Theme toggle */}
+            <button
+              onClick={() => setIsDark(!isDark)}
+              className="print:hidden relative flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold transition-all duration-300 border"
+              style={{
+                background: isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.9)",
+                borderColor: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)",
+                color: isDark ? "#e2e8f0" : "#1e293b",
+                boxShadow: isDark ? "0 0 12px rgba(59,130,246,0.15)" : "0 0 12px rgba(250,204,21,0.25)",
+              }}
+              title={isDark ? "Modo Claro" : "Modo Escuro"}
+            >
+              {isDark ? <Sun className="h-4 w-4 text-yellow-400" /> : <Moon className="h-4 w-4 text-blue-600" />}
+              <span className="hidden sm:inline">{isDark ? "Claro" : "Escuro"}</span>
+            </button>
             {/* IGP Badge */}
             <div
               className="flex items-center gap-2 rounded-full px-4 py-2 text-white font-bold text-sm"
