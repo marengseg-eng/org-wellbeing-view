@@ -472,7 +472,7 @@ const ResultadoOrganizacional = () => {
             tempCanvas.width = canvas.width;
             tempCanvas.height = curSlicePx;
             const ctx = tempCanvas.getContext("2d")!;
-            ctx.fillStyle = "#ffffff";
+            ctx.fillStyle = isDark ? "#0b1120" : "#ffffff";
             ctx.fillRect(0, 0, canvas.width, curSlicePx);
             ctx.drawImage(canvas, 0, canvas.height - hLeft, canvas.width, curSlicePx, 0, 0, canvas.width, curSlicePx);
             pdf.addImage(tempCanvas.toDataURL("image/png"), "PNG", MARGIN_MM, currentY, usableW, curSliceMM);
