@@ -14,7 +14,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { FactorChart } from "@/components/FactorChart";
 import { RadarFactorChart } from "@/components/RadarFactorChart";
 import { AIHAMatrix } from "@/components/AIHAMatrix";
-import { Download, Save, Printer, X, Search, AlertTriangle, ClipboardList } from "lucide-react";
+import { Download, Save, Printer, X, Search, AlertTriangle, ClipboardList, Sun, Moon } from "lucide-react";
 import { Plano5W2H, type Acao5W2H } from "@/components/Plano5W2H";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
