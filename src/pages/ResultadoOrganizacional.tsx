@@ -576,27 +576,27 @@ const ResultadoOrganizacional = () => {
   </div>
   ${chartImgBase64 || radarImgBase64 ? `<div class="section"><div class="section-title">Gráficos de Fatores</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px;">
-      ${chartImgBase64 ? `<div><p style="font-size:12px;font-weight:700;color:#94a3b8;margin-bottom:6px;text-transform:uppercase;">Barras</p><img src="${chartImgBase64}" alt="Gráfico de Barras" style="width:100%;border-radius:8px;" /></div>` : ""}
-      ${radarImgBase64 ? `<div><p style="font-size:12px;font-weight:700;color:#94a3b8;margin-bottom:6px;text-transform:uppercase;">Radar</p><img src="${radarImgBase64}" alt="Gráfico Radar" style="width:100%;border-radius:8px;" /></div>` : ""}
+      ${chartImgBase64 ? `<div><p style="font-size:12px;font-weight:700;color:${textMuted};margin-bottom:6px;text-transform:uppercase;">Barras</p><img src="${chartImgBase64}" alt="Gráfico de Barras" style="width:100%;border-radius:8px;" /></div>` : ""}
+      ${radarImgBase64 ? `<div><p style="font-size:12px;font-weight:700;color:${textMuted};margin-bottom:6px;text-transform:uppercase;">Radar</p><img src="${radarImgBase64}" alt="Gráfico Radar" style="width:100%;border-radius:8px;" /></div>` : ""}
     </div></div>` : ""}
   <div class="section"><div class="section-title">Matriz de Risco — AIHA</div>
     <table style="border-collapse:separate;border-spacing:3px;max-width:350px;"><thead><tr><th style="width:36px;"></th><th style="text-align:center;">1</th><th style="text-align:center;">2</th><th style="text-align:center;">3</th><th style="text-align:center;">4</th><th style="text-align:center;">5</th></tr></thead><tbody>${matrixRows}</tbody></table>
-    <p style="margin-top:12px;font-size:14px;color:#cbd5e1;">P=${aiha.probabilidade} × S=${aiha.severidade} = <strong>${aiha.probabilidade * aiha.severidade}</strong> — <span style="color:${sColor};font-weight:700;">${aiha.classificacao}</span></p>
+    <p style="margin-top:12px;font-size:14px;color:${textSub};">P=${aiha.probabilidade} × S=${aiha.severidade} = <strong>${aiha.probabilidade * aiha.severidade}</strong> — <span style="color:${sColor};font-weight:700;">${aiha.classificacao}</span></p>
   </div>
   <div class="section"><div class="section-title">Conclusão Executiva</div><div class="conclusao">${conclusao || "—"}</div></div>
   ${recsHtml ? `<div class="section"><div class="section-title">Recomendações</div><ol>${recsHtml}</ol></div>` : ""}
   ${acoes5w2h.length > 0 ? `<div class="section"><div class="section-title">Plano de Ação — 5W2H</div>
     <table><thead><tr><th>#</th><th>O quê</th><th>Por quê</th><th>Onde</th><th>Quando</th><th>Quem</th><th>Como</th><th>Custo</th><th>Status</th></tr></thead><tbody>
     ${acoes5w2h.map((a, i) => `<tr>
-      <td style="padding:8px;border-bottom:1px solid #1e293b;color:#94a3b8;text-align:center;font-weight:700;">${i + 1}</td>
-      <td style="padding:8px;border-bottom:1px solid #1e293b;color:#e2e8f0;font-size:13px;">${a.what || "—"}</td>
-      <td style="padding:8px;border-bottom:1px solid #1e293b;color:#cbd5e1;font-size:12px;">${a.why || "—"}</td>
-      <td style="padding:8px;border-bottom:1px solid #1e293b;color:#cbd5e1;font-size:12px;">${a.where || "—"}</td>
-      <td style="padding:8px;border-bottom:1px solid #1e293b;color:#cbd5e1;font-size:12px;">${a.when || "—"}</td>
-      <td style="padding:8px;border-bottom:1px solid #1e293b;color:#cbd5e1;font-size:12px;">${a.who || "—"}</td>
-      <td style="padding:8px;border-bottom:1px solid #1e293b;color:#cbd5e1;font-size:12px;">${a.how || "—"}</td>
-      <td style="padding:8px;border-bottom:1px solid #1e293b;color:#cbd5e1;font-size:12px;">${a.howMuch || "—"}</td>
-      <td style="padding:8px;border-bottom:1px solid #1e293b;color:#94a3b8;font-size:11px;font-weight:700;text-transform:uppercase;">${a.status === "pendente" ? "Pendente" : a.status === "em_andamento" ? "Em Andamento" : "Concluída"}</td>
+      <td style="padding:8px;border-bottom:1px solid ${borderC};color:${textMuted};text-align:center;font-weight:700;">${i + 1}</td>
+      <td style="padding:8px;border-bottom:1px solid ${borderC};color:${textMain};font-size:13px;">${a.what || "—"}</td>
+      <td style="padding:8px;border-bottom:1px solid ${borderC};color:${textSub};font-size:12px;">${a.why || "—"}</td>
+      <td style="padding:8px;border-bottom:1px solid ${borderC};color:${textSub};font-size:12px;">${a.where || "—"}</td>
+      <td style="padding:8px;border-bottom:1px solid ${borderC};color:${textSub};font-size:12px;">${a.when || "—"}</td>
+      <td style="padding:8px;border-bottom:1px solid ${borderC};color:${textSub};font-size:12px;">${a.who || "—"}</td>
+      <td style="padding:8px;border-bottom:1px solid ${borderC};color:${textSub};font-size:12px;">${a.how || "—"}</td>
+      <td style="padding:8px;border-bottom:1px solid ${borderC};color:${textSub};font-size:12px;">${a.howMuch || "—"}</td>
+      <td style="padding:8px;border-bottom:1px solid ${borderC};color:${textMuted};font-size:11px;font-weight:700;text-transform:uppercase;">${a.status === "pendente" ? "Pendente" : a.status === "em_andamento" ? "Em Andamento" : "Concluída"}</td>
     </tr>`).join("")}
     </tbody></table></div>` : ""}
   <div class="footer">Engenheiro de Segurança do Trabalho — CREA-SP: 5069572947 &nbsp;|&nbsp; Fisioterapeuta — Ergonomista — CREFITO 3/209468-F</div>
