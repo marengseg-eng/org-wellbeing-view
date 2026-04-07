@@ -509,13 +509,15 @@ const ResultadoOrganizacional = () => {
     const barBg = dark ? "#1e293b" : "#e2e8f0";
     const barColor = (v: number) => { if (v <= 30) return "#22c55e"; if (v <= 50) return "#eab308"; if (v <= 70) return "#f97316"; return "#ef4444"; };
     const sColor = getStatusColor(classificacaoEfetiva);
+    let chartImgBase64 = "";
     let radarImgBase64 = "";
+    const chartBg = dark ? "#0f1729" : "#ffffff";
     const chartContainers = reportRef.current?.querySelectorAll(".recharts-responsive-container");
     if (chartContainers && chartContainers.length >= 1) {
-      try { const c = await html2canvas(chartContainers[0] as HTMLElement, { scale: 2, useCORS: true, backgroundColor: "#0f1729" }); chartImgBase64 = c.toDataURL("image/png"); } catch {}
+      try { const c = await html2canvas(chartContainers[0] as HTMLElement, { scale: 2, useCORS: true, backgroundColor: chartBg }); chartImgBase64 = c.toDataURL("image/png"); } catch {}
     }
     if (chartContainers && chartContainers.length >= 2) {
-      try { const c = await html2canvas(chartContainers[1] as HTMLElement, { scale: 2, useCORS: true, backgroundColor: "#0f1729" }); radarImgBase64 = c.toDataURL("image/png"); } catch {}
+      try { const c = await html2canvas(chartContainers[1] as HTMLElement, { scale: 2, useCORS: true, backgroundColor: chartBg }); radarImgBase64 = c.toDataURL("image/png"); } catch {}
     }
 
     const factorRows = activeFactors.map((f) => {
