@@ -180,7 +180,7 @@ const ResultadoOrganizacional = () => {
         setSetorTipo(d.setorTipo || "GERAL");
         setDataAvaliacao(d.dataAvaliacao || "");
         setNumEntrevistados(d.numEntrevistados ?? "");
-        setFactors(d.factors || {});
+        setRespostas(d.respostas || {});
         setClassificacaoTecnica(d.classificacaoTecnica || "");
         setConclusao(d.conclusao || "");
         setRecomendacoes(d.recomendacoes || [""]);
@@ -277,7 +277,7 @@ const ResultadoOrganizacional = () => {
     const key = makeStorageKey(empresa, setorCustom);
     const payload = {
       empresa, cnpj, setorCustom, setor: setorCustom, setorTipo, dataAvaliacao, numEntrevistados,
-      factors, classificacaoTecnica, conclusao, recomendacoes,
+      respostas, factors, classificacaoTecnica, conclusao, recomendacoes,
       acoes5w2h, acoes5w2hManual,
       savedAt: new Date().toISOString(),
     };
