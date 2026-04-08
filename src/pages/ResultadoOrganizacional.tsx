@@ -24,7 +24,6 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
 import { ALL_FACTORS, SECTOR_FACTORS, FACTOR_5W2H_TEMPLATES, FACTOR_RECOMMENDATIONS, type FactorKey } from "@/data/factorDefinitions";
-import { QUESTOES, LIKERT_OPTIONS, calcularFatoresPorQuestionario, calcularEscalaConformidade } from "@/data/questionario";
 
 const SECTOR_OPTIONS = Object.keys(SECTOR_FACTORS);
 
@@ -178,7 +177,7 @@ const ResultadoOrganizacional = () => {
         setSetorTipo(d.setorTipo || "GERAL");
         setDataAvaliacao(d.dataAvaliacao || "");
         setNumEntrevistados(d.numEntrevistados ?? "");
-        setRespostas(d.respostas || {});
+        setFactors(d.factors || {});
         setClassificacaoTecnica(d.classificacaoTecnica || "");
         setConclusao(d.conclusao || "");
         setRecomendacoes(d.recomendacoes || [""]);
@@ -275,7 +274,7 @@ const ResultadoOrganizacional = () => {
     const key = makeStorageKey(empresa, setorCustom);
     const payload = {
       empresa, cnpj, setorCustom, setor: setorCustom, setorTipo, dataAvaliacao, numEntrevistados,
-      respostas, factors, classificacaoTecnica, conclusao, recomendacoes,
+      factors, classificacaoTecnica, conclusao, recomendacoes,
       acoes5w2h, acoes5w2hManual,
       savedAt: new Date().toISOString(),
     };
@@ -283,7 +282,7 @@ const ResultadoOrganizacional = () => {
     setSavedEmpresas(getSavedEmpresas());
     setSavedSetores(getSavedSetores(empresa));
     toast.success(`Avaliação salva: "${empresa}"${setorCustom ? ` — ${setorCustom}` : ""}`);
-  }, [empresa, cnpj, setorCustom, setorTipo, dataAvaliacao, numEntrevistados, respostas, factors, classificacaoTecnica, conclusao, recomendacoes, acoes5w2h, acoes5w2hManual]);
+  }, [empresa, cnpj, setorCustom, setorTipo, dataAvaliacao, numEntrevistados, factors, classificacaoTecnica, conclusao, recomendacoes, acoes5w2h, acoes5w2hManual]);
 
   const handlePrint = useCallback(() => { window.print(); }, []);
 
