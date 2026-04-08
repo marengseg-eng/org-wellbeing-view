@@ -104,7 +104,9 @@ const ResultadoOrganizacional = () => {
   const [numEntrevistados, setNumEntrevistados] = useState<number | "">("");
   const [conclusao, setConclusao] = useState("");
   const [recomendacoes, setRecomendacoes] = useState<string[]>([""]);
-  const [factors, setFactors] = useState<Record<string, number>>({});
+  const [respostas, setRespostas] = useState<Record<number, number>>({});
+  const factors = useMemo(() => calcularFatoresPorQuestionario(respostas), [respostas]);
+  const escalaConformidade = useMemo(() => calcularEscalaConformidade(respostas), [respostas]);
   const [classificacaoTecnica, setClassificacaoTecnica] = useState<ClassificacaoGeral>("");
   const [acoes5w2hManual, setAcoes5w2hManual] = useState<Acao5W2H[]>([]);
   const [isDark, setIsDark] = useState(true);
