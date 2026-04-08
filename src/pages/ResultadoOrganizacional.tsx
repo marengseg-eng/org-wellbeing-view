@@ -24,6 +24,7 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
 import { ALL_FACTORS, SECTOR_FACTORS, FACTOR_5W2H_TEMPLATES, FACTOR_RECOMMENDATIONS, type FactorKey } from "@/data/factorDefinitions";
+import { QUESTOES, LIKERT_OPTIONS, calcularFatoresPorQuestionario, calcularEscalaConformidade } from "@/data/questionario";
 
 const SECTOR_OPTIONS = Object.keys(SECTOR_FACTORS);
 
