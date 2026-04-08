@@ -23,7 +23,9 @@ import { toast } from "sonner";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
-/* ========== SECTOR-BASED FACTOR DEFINITIONS ========== */
+import { ALL_FACTORS, SECTOR_FACTORS, FACTOR_5W2H_TEMPLATES, FACTOR_RECOMMENDATIONS, type FactorKey } from "@/data/factorDefinitions";
+
+const SECTOR_OPTIONS = Object.keys(SECTOR_FACTORS);
 const ALL_FACTORS = [
   { key: "carga", label: "Carga e Ritmo de Trabalho", weight: 1.2 },
   { key: "jornada", label: "Jornada e Organização do Tempo", weight: 1.0 },
