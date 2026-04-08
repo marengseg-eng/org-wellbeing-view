@@ -719,8 +719,25 @@ const ResultadoOrganizacional = () => {
         {/* ===== RECOMENDAÇÕES SECTION ===== */}
         <div data-pdf-section className="px-8 py-4">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-bold text-foreground">Recomendações</h3>
-            <Button type="button" variant="outline" size="sm" onClick={addRecomendacao} className="print:hidden h-7 text-xs gap-1">+ Item</Button>
+            <h3 className="text-sm font-bold text-foreground">Recomendações Técnicas</h3>
+            <div className="flex gap-2 print:hidden">
+              <Button type="button" variant="outline" size="sm" onClick={() => {
+                const allRecs: string[] = [];
+                activeFactors.forEach((f) => {
+                  const recs = FACTOR_RECOMMENDATIONS[f.key as FactorKey];
+                  if (recs) {
+                    allRecs.push(`[${f.label}]`);
+                    recs.forEach(r => allRecs.push(r));
+                  }
+                });
+                setRecomendacoes(allRecs.length > 0 ? allRecs : [""]);
+                toast.success("Recomendações geradas com base nos fatores ativos.");
+              }} className="h-7 text-xs gap-1">
+                <ClipboardList className="h-3 w-3" />
+                Gerar Recomendações
+              </Button>
+              <Button type="button" variant="outline" size="sm" onClick={addRecomendacao} className="h-7 text-xs gap-1">+ Item</Button>
+            </div>
           </div>
           <div className="border rounded-lg p-3 bg-card space-y-2">
             {recomendacoes.map((rec, i) => (
