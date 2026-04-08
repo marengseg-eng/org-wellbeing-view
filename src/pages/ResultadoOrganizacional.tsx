@@ -626,15 +626,6 @@ const ResultadoOrganizacional = () => {
               <div className="mt-4"><StatusBadge status={classificacaoAutomatica} /></div>
               <span className="text-[10px] text-muted-foreground mt-1">Classificação Automática</span>
 
-              {/* Escala de Conformidade */}
-              {Object.keys(respostas).length > 0 && (
-                <>
-                  <Separator className="my-3 w-full" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Escala de Conformidade</span>
-                  <span className="text-2xl font-bold" style={{ color: escalaConformidade.cor }}>{escalaConformidade.pontuacao}/20</span>
-                  <span className="text-[10px] font-semibold mt-1" style={{ color: escalaConformidade.cor }}>{escalaConformidade.nivel}</span>
-                </>
-              )}
 
               <Separator className="my-4 w-full" />
               <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Classificação Técnica Final</span>
@@ -652,68 +643,40 @@ const ResultadoOrganizacional = () => {
           </div>
         </div>
 
-        {/* ===== QUESTIONÁRIO PSICOSSOCIAL ===== */}
+        {/* ===== FATORES PSICOSSOCIAIS — SLIDERS ===== */}
         <div data-pdf-section className="print-page px-8 py-6">
-          <h3 className="text-sm font-bold text-foreground mb-1">Questionário Psicossocial — Avaliação de Bem-Estar</h3>
+          <h3 className="text-sm font-bold text-foreground mb-1">Fatores de Riscos Psicossociais</h3>
           <p className="text-[10px] text-muted-foreground mb-4">
-            Baseado em COPSOQ, ITRA e JCQ • Escala: NUNCA (0) a COM MUITA FREQUÊNCIA (4)
-            <span className="ml-2 font-semibold text-foreground">{Object.keys(respostas).length}/{QUESTOES.length} respondidas</span>
+            Ajuste o percentual de risco de cada fator conforme avaliação — Setor: <span className="font-semibold text-foreground">{setorTipo}</span>
           </p>
-          <div className="space-y-3">
-            {QUESTOES.map((q) => (
-              <div key={q.id} className={cn(
-                "border rounded-lg p-3 bg-card transition-colors",
-                respostas[q.id] !== undefined && "border-primary/30"
-              )}>
-                <div className="flex gap-3">
-                  <span className="text-xs font-bold text-primary min-w-[24px] mt-0.5">{q.id}.</span>
-                  <div className="flex-1">
-                    <p className="text-xs text-foreground leading-relaxed mb-2">{q.texto}</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {LIKERT_OPTIONS.map((opt) => (
-                        <button
-                          key={opt.value}
-                          type="button"
-                          onClick={() => setRespostas((prev) => ({ ...prev, [q.id]: opt.value }))}
-                          className={cn(
-                            "px-2.5 py-1 rounded-md text-[10px] font-medium border transition-all",
-                            respostas[q.id] === opt.value
-                              ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                              : "bg-muted/50 text-muted-foreground border-border hover:bg-muted hover:text-foreground"
-                          )}
-                        >
-                          {opt.label}
-                        </button>
-                      ))}
-                    </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {activeFactors.map((f) => {
+              const val = factors[f.key] || 0;
+              const barColor = val <= 30 ? "bg-status-conforme" : val <= 50 ? "bg-status-atencao" : val <= 70 ? "bg-status-elevado" : "bg-status-critico";
+              const textColor = val <= 30 ? "text-status-conforme" : val <= 50 ? "text-status-atencao" : val <= 70 ? "text-status-elevado" : "text-status-critico";
+              return (
+                <div key={f.key} className="border rounded-lg p-3 bg-card">
+                  <div className="flex items-center justify-between mb-1">
+                    <Label className="text-xs font-semibold text-foreground">{f.label}</Label>
+                    <span className={cn("text-sm font-bold", textColor)}>{val}%</span>
                   </div>
-                  <span className="text-[9px] text-muted-foreground/60 uppercase whitespace-nowrap mt-0.5">
-                    {ALL_FACTORS.find(f => f.key === q.fator)?.label.split("/")[0]?.trim() || q.fator}
-                  </span>
+                  <p className="text-[9px] text-muted-foreground mb-2">Peso: ×{f.weight} • {f.nrRef}</p>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    value={val}
+                    onChange={(e) => setFactors((prev) => ({ ...prev, [f.key]: Number(e.target.value) }))}
+                    className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-primary"
+                    style={{ accentColor: val <= 30 ? "#22c55e" : val <= 50 ? "#eab308" : val <= 70 ? "#f97316" : "#ef4444" }}
+                  />
+                  <div className="w-full rounded-full h-1.5 mt-1 bg-muted overflow-hidden">
+                    <div className={cn("h-full rounded-full transition-all", barColor)} style={{ width: `${val}%` }} />
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
-
-          {/* Resumo dos fatores calculados */}
-          {Object.keys(respostas).length > 0 && (
-            <div className="mt-6 border rounded-lg p-4 bg-card">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Fatores Calculados — {setorTipo}</h4>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-                {activeFactors.map((f) => {
-                  const val = factors[f.key] || 0;
-                  const statusColor = val <= 30 ? "text-status-conforme" : val <= 50 ? "text-status-atencao" : val <= 70 ? "text-status-elevado" : "text-status-critico";
-                  return (
-                    <div key={f.key} className="text-center p-2 rounded-md border border-border">
-                      <p className="text-[9px] text-muted-foreground truncate mb-1">{f.label.split("/")[0]?.trim()}</p>
-                      <p className={cn("text-lg font-bold", statusColor)}>{val}%</p>
-                      <p className="text-[8px] text-muted-foreground">×{f.weight}</p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* ===== CHARTS SECTION ===== */}
