@@ -23,122 +23,7 @@ import { toast } from "sonner";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
-/* ========== SECTOR-BASED FACTOR DEFINITIONS ========== */
-const ALL_FACTORS = [
-  { key: "carga", label: "Carga e Ritmo de Trabalho", weight: 1.2 },
-  { key: "jornada", label: "Jornada e Organização do Tempo", weight: 1.0 },
-  { key: "autonomia", label: "Autonomia e Controle", weight: 1.0 },
-  { key: "exigencias", label: "Exigências Cognitivas e Emocionais", weight: 1.3 },
-  { key: "comunicacao", label: "Comunicação, Ambiente e Liderança", weight: 1.1 },
-  { key: "relacoes", label: "Relações Interpessoais", weight: 1.0 },
-  { key: "violencia", label: "Violência e Assédio", weight: 1.5 },
-  { key: "seguranca", label: "Segurança no Trabalho", weight: 1.4 },
-  { key: "satisfacao", label: "Satisfação e Engajamento", weight: 0.9 },
-  { key: "conciliacao", label: "Conciliação Trabalho-Vida", weight: 1.0 },
-] as const;
-
-type FactorKey = (typeof ALL_FACTORS)[number]["key"];
-
-const SECTOR_FACTORS: Record<string, FactorKey[]> = {
-  GERAL: ["carga", "jornada", "autonomia", "exigencias", "comunicacao"],
-  "CONSTRUÇÃO": ["carga", "jornada", "seguranca", "comunicacao", "violencia", "relacoes"],
-  "SAÚDE": ["carga", "exigencias", "jornada", "violencia", "conciliacao", "comunicacao"],
-  "ESCRITÓRIO": ["carga", "jornada", "autonomia", "exigencias", "satisfacao", "comunicacao"],
-};
-
-/* ========== 5W2H TEMPLATES PER FACTOR ========== */
-const FACTOR_5W2H_TEMPLATES: Record<string, Omit<import("@/components/Plano5W2H").Acao5W2H, "id" | "status">> = {
-  carga: {
-    what: "Reavaliar distribuição de tarefas e carga de trabalho",
-    why: "Fator Carga e Ritmo de Trabalho em nível elevado/crítico",
-    where: "Todos os setores afetados",
-    when: "30 dias — curto prazo",
-    who: "Gestores de área e RH",
-    how: "Mapeamento de tarefas, redistribuição de demandas, contratação se necessário",
-    howMuch: "A definir conforme diagnóstico",
-  },
-  jornada: {
-    what: "Revisar escalas e organização da jornada de trabalho",
-    why: "Fator Jornada e Organização do Tempo em nível elevado/crítico",
-    where: "Setores com jornadas estendidas",
-    when: "45 dias — curto prazo",
-    who: "RH e Gestão de Pessoas",
-    how: "Análise de escalas, implementação de pausas regulamentares, controle de horas extras",
-    howMuch: "A definir conforme diagnóstico",
-  },
-  autonomia: {
-    what: "Ampliar autonomia e participação dos colaboradores",
-    why: "Fator Autonomia e Controle em nível elevado/crítico",
-    where: "Áreas com gestão centralizada",
-    when: "60 dias — médio prazo",
-    who: "Lideranças e RH",
-    how: "Delegação de decisões, programas de empowerment, feedbacks participativos",
-    howMuch: "Baixo custo — treinamento interno",
-  },
-  exigencias: {
-    what: "Implementar suporte para exigências cognitivas e emocionais",
-    why: "Fator Exigências Cognitivas e Emocionais em nível elevado/crítico",
-    where: "Postos com alta demanda emocional/cognitiva",
-    when: "30 dias — curto prazo",
-    who: "Psicólogo organizacional e RH",
-    how: "Programa de apoio psicológico, rodízio de funções, capacitação em inteligência emocional",
-    howMuch: "Médio — contratação de profissional especializado",
-  },
-  comunicacao: {
-    what: "Melhorar canais de comunicação e práticas de liderança",
-    why: "Fator Comunicação, Ambiente e Liderança em nível elevado/crítico",
-    where: "Toda a organização",
-    when: "45 dias — curto prazo",
-    who: "Diretoria e Gestores",
-    how: "Treinamento de liderança, reuniões periódicas, canal de escuta ativa",
-    howMuch: "Médio — treinamentos e ferramentas de comunicação",
-  },
-  relacoes: {
-    what: "Fortalecer relações interpessoais no ambiente de trabalho",
-    why: "Fator Relações Interpessoais em nível elevado/crítico",
-    where: "Setores com conflitos identificados",
-    when: "60 dias — médio prazo",
-    who: "RH e Psicólogo organizacional",
-    how: "Dinâmicas de grupo, mediação de conflitos, política de convivência",
-    howMuch: "Baixo a médio — ações internas",
-  },
-  violencia: {
-    what: "Implementar programa de prevenção à violência e assédio",
-    why: "Fator Violência e Assédio em nível elevado/crítico — PRIORIDADE",
-    where: "Toda a organização",
-    when: "15 dias — URGENTE",
-    who: "Comitê de ética, RH e Jurídico",
-    how: "Canal de denúncias, política antiassédio, treinamento obrigatório, investigação de casos",
-    howMuch: "Médio a alto — estrutura de compliance",
-  },
-  seguranca: {
-    what: "Reforçar percepção e práticas de segurança no trabalho",
-    why: "Fator Segurança no Trabalho em nível elevado/crítico",
-    where: "Áreas operacionais e de risco",
-    when: "15 dias — URGENTE",
-    who: "SESMT e Gestores operacionais",
-    how: "Revisão de procedimentos, DDS, EPIs, treinamento de segurança, análise de incidentes",
-    howMuch: "Variável — conforme necessidades de EPIs e infraestrutura",
-  },
-  satisfacao: {
-    what: "Desenvolver programa de engajamento e satisfação",
-    why: "Fator Satisfação e Engajamento em nível elevado/crítico",
-    where: "Toda a organização",
-    when: "90 dias — médio prazo",
-    who: "RH e Gestão de Pessoas",
-    how: "Pesquisa de clima, plano de carreira, reconhecimento, benefícios",
-    howMuch: "Médio — programas de incentivo",
-  },
-  conciliacao: {
-    what: "Promover equilíbrio entre trabalho e vida pessoal",
-    why: "Fator Conciliação Trabalho-Vida em nível elevado/crítico",
-    where: "Toda a organização",
-    when: "60 dias — médio prazo",
-    who: "RH e Diretoria",
-    how: "Flexibilidade de horário, home office, política de desconexão digital",
-    howMuch: "Baixo — mudanças de política interna",
-  },
-};
+import { ALL_FACTORS, SECTOR_FACTORS, FACTOR_5W2H_TEMPLATES, FACTOR_RECOMMENDATIONS, type FactorKey } from "@/data/factorDefinitions";
 
 const SECTOR_OPTIONS = Object.keys(SECTOR_FACTORS);
 
@@ -834,14 +719,31 @@ const ResultadoOrganizacional = () => {
         {/* ===== RECOMENDAÇÕES SECTION ===== */}
         <div data-pdf-section className="px-8 py-4">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-bold text-foreground">Recomendações</h3>
-            <Button type="button" variant="outline" size="sm" onClick={addRecomendacao} className="print:hidden h-7 text-xs gap-1">+ Item</Button>
+            <h3 className="text-sm font-bold text-foreground">Recomendações Técnicas</h3>
+            <div className="flex gap-2 print:hidden">
+              <Button type="button" variant="outline" size="sm" onClick={() => {
+                const allRecs: string[] = [];
+                activeFactors.forEach((f) => {
+                  const recs = FACTOR_RECOMMENDATIONS[f.key as FactorKey];
+                  if (recs) {
+                    allRecs.push(`[${f.label}]`);
+                    recs.forEach(r => allRecs.push(r));
+                  }
+                });
+                setRecomendacoes(allRecs.length > 0 ? allRecs : [""]);
+                toast.success("Recomendações geradas com base nos fatores ativos.");
+              }} className="h-7 text-xs gap-1">
+                <ClipboardList className="h-3 w-3" />
+                Gerar Recomendações
+              </Button>
+              <Button type="button" variant="outline" size="sm" onClick={addRecomendacao} className="h-7 text-xs gap-1">+ Item</Button>
+            </div>
           </div>
           <div className="border rounded-lg p-3 bg-card space-y-2">
             {recomendacoes.map((rec, i) => (
               <div key={i} className="flex items-start gap-2">
                 <span className="text-xs font-bold text-muted-foreground mt-2 min-w-[20px]">{i + 1}.</span>
-                <Input value={rec} onChange={(e) => updateRecomendacao(i, e.target.value)} placeholder={`Recomendação ${i + 1}...`} className="h-8 text-sm bg-card border-border flex-1" />
+                <Textarea value={rec} onChange={(e) => updateRecomendacao(i, e.target.value)} placeholder={`Recomendação ${i + 1}...`} className="text-sm bg-card border-border flex-1 min-h-[36px] resize-none" rows={1} />
                 {recomendacoes.length > 1 && (
                   <button onClick={() => removeRecomendacao(i)} className="print:hidden text-muted-foreground hover:text-destructive mt-1.5" title="Remover"><X className="h-4 w-4" /></button>
                 )}
