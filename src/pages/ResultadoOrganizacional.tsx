@@ -24,6 +24,7 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
 import { ALL_FACTORS, SECTOR_FACTORS, FACTOR_5W2H_TEMPLATES, FACTOR_RECOMMENDATIONS, type FactorKey } from "@/data/factorDefinitions";
+import { QUESTOES, LIKERT_OPTIONS, calcularFatoresPorQuestionario, calcularEscalaConformidade } from "@/data/questionario";
 
 const SECTOR_OPTIONS = Object.keys(SECTOR_FACTORS);
 
@@ -103,7 +104,9 @@ const ResultadoOrganizacional = () => {
   const [numEntrevistados, setNumEntrevistados] = useState<number | "">("");
   const [conclusao, setConclusao] = useState("");
   const [recomendacoes, setRecomendacoes] = useState<string[]>([""]);
-  const [factors, setFactors] = useState<Record<string, number>>({});
+  const [respostas, setRespostas] = useState<Record<number, number>>({});
+  const factors = useMemo(() => calcularFatoresPorQuestionario(respostas), [respostas]);
+  const escalaConformidade = useMemo(() => calcularEscalaConformidade(respostas), [respostas]);
   const [classificacaoTecnica, setClassificacaoTecnica] = useState<ClassificacaoGeral>("");
   const [acoes5w2hManual, setAcoes5w2hManual] = useState<Acao5W2H[]>([]);
   const [isDark, setIsDark] = useState(true);
@@ -177,7 +180,7 @@ const ResultadoOrganizacional = () => {
         setSetorTipo(d.setorTipo || "GERAL");
         setDataAvaliacao(d.dataAvaliacao || "");
         setNumEntrevistados(d.numEntrevistados ?? "");
-        setFactors(d.factors || {});
+        setRespostas(d.respostas || {});
         setClassificacaoTecnica(d.classificacaoTecnica || "");
         setConclusao(d.conclusao || "");
         setRecomendacoes(d.recomendacoes || [""]);
@@ -274,7 +277,7 @@ const ResultadoOrganizacional = () => {
     const key = makeStorageKey(empresa, setorCustom);
     const payload = {
       empresa, cnpj, setorCustom, setor: setorCustom, setorTipo, dataAvaliacao, numEntrevistados,
-      factors, classificacaoTecnica, conclusao, recomendacoes,
+      respostas, factors, classificacaoTecnica, conclusao, recomendacoes,
       acoes5w2h, acoes5w2hManual,
       savedAt: new Date().toISOString(),
     };
@@ -282,7 +285,7 @@ const ResultadoOrganizacional = () => {
     setSavedEmpresas(getSavedEmpresas());
     setSavedSetores(getSavedSetores(empresa));
     toast.success(`Avaliação salva: "${empresa}"${setorCustom ? ` — ${setorCustom}` : ""}`);
-  }, [empresa, cnpj, setorCustom, setorTipo, dataAvaliacao, numEntrevistados, factors, classificacaoTecnica, conclusao, recomendacoes, acoes5w2h, acoes5w2hManual]);
+  }, [empresa, cnpj, setorCustom, setorTipo, dataAvaliacao, numEntrevistados, respostas, factors, classificacaoTecnica, conclusao, recomendacoes, acoes5w2h, acoes5w2hManual]);
 
   const handlePrint = useCallback(() => { window.print(); }, []);
 
@@ -552,7 +555,7 @@ const ResultadoOrganizacional = () => {
 
         {/* ===== PAGE 1: Identification + Index ===== */}
         <div data-pdf-section className="print-page px-8 py-6 flex flex-col">
-          <div className="grid grid-cols-3 gap-6 flex-1">
+          <div className="grid grid-cols-3 gap-6">
             <div className="col-span-2 flex flex-col">
               <div className="grid grid-cols-3 gap-x-6 gap-y-4">
                 {/* Empresa */}
@@ -617,31 +620,6 @@ const ResultadoOrganizacional = () => {
                   Avaliação baseada em entrevistas individualizadas com <span className="font-semibold text-foreground">{numEntrevistados}</span> colaboradores.
                 </p>
               )}
-
-              {/* Factor inputs */}
-              <div className="mt-auto pt-6">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
-                  Fatores Psicossociais — {setorTipo}
-                </h3>
-                <p className="text-[10px] text-muted-foreground mb-3">Peso de cada fator no IGP indicado entre parênteses.</p>
-                <div className="grid grid-cols-3 gap-x-4 gap-y-3 lg:grid-cols-3 xl:grid-cols-4">
-                  {activeFactors.map((f) => (
-                    <div key={f.key} className="space-y-1">
-                      <Label className="text-[10px] leading-tight text-muted-foreground line-clamp-2">
-                        {f.label} <span className="text-[9px] opacity-60">(×{f.weight})</span>
-                        {(factors[f.key] || 0) > 50 && <AlertTriangle className="inline h-3 w-3 text-destructive ml-1" />}
-                      </Label>
-                      <Input
-                        type="number" min={0} max={100}
-                        value={factors[f.key] || ""}
-                        onChange={(e) => setFactors((prev) => ({ ...prev, [f.key]: Number(e.target.value) }))}
-                        className={cn("h-9 text-sm bg-card border-border", (factors[f.key] || 0) > 50 && "border-destructive/50")}
-                        placeholder="0–100"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
 
             {/* Right: Index block */}
@@ -650,6 +628,17 @@ const ResultadoOrganizacional = () => {
               <span className={cn("text-7xl font-bold leading-none", classificacaoEfetiva ? indiceTextColor[classificacaoEfetiva] : "text-muted-foreground")}>{indiceGeral}%</span>
               <div className="mt-4"><StatusBadge status={classificacaoAutomatica} /></div>
               <span className="text-[10px] text-muted-foreground mt-1">Classificação Automática</span>
+
+              {/* Escala de Conformidade */}
+              {Object.keys(respostas).length > 0 && (
+                <>
+                  <Separator className="my-3 w-full" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Escala de Conformidade</span>
+                  <span className="text-2xl font-bold" style={{ color: escalaConformidade.cor }}>{escalaConformidade.pontuacao}/20</span>
+                  <span className="text-[10px] font-semibold mt-1" style={{ color: escalaConformidade.cor }}>{escalaConformidade.nivel}</span>
+                </>
+              )}
+
               <Separator className="my-4 w-full" />
               <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Classificação Técnica Final</span>
               <Select value={classificacaoTecnica} onValueChange={(v) => setClassificacaoTecnica(v as ClassificacaoGeral)}>
@@ -664,6 +653,70 @@ const ResultadoOrganizacional = () => {
               {classificacaoTecnica && <div className="mt-2"><StatusBadge status={classificacaoEfetiva} /></div>}
             </div>
           </div>
+        </div>
+
+        {/* ===== QUESTIONÁRIO PSICOSSOCIAL ===== */}
+        <div data-pdf-section className="print-page px-8 py-6">
+          <h3 className="text-sm font-bold text-foreground mb-1">Questionário Psicossocial — Avaliação de Bem-Estar</h3>
+          <p className="text-[10px] text-muted-foreground mb-4">
+            Baseado em COPSOQ, ITRA e JCQ • Escala: NUNCA (0) a COM MUITA FREQUÊNCIA (4)
+            <span className="ml-2 font-semibold text-foreground">{Object.keys(respostas).length}/{QUESTOES.length} respondidas</span>
+          </p>
+          <div className="space-y-3">
+            {QUESTOES.map((q) => (
+              <div key={q.id} className={cn(
+                "border rounded-lg p-3 bg-card transition-colors",
+                respostas[q.id] !== undefined && "border-primary/30"
+              )}>
+                <div className="flex gap-3">
+                  <span className="text-xs font-bold text-primary min-w-[24px] mt-0.5">{q.id}.</span>
+                  <div className="flex-1">
+                    <p className="text-xs text-foreground leading-relaxed mb-2">{q.texto}</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {LIKERT_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => setRespostas((prev) => ({ ...prev, [q.id]: opt.value }))}
+                          className={cn(
+                            "px-2.5 py-1 rounded-md text-[10px] font-medium border transition-all",
+                            respostas[q.id] === opt.value
+                              ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                              : "bg-muted/50 text-muted-foreground border-border hover:bg-muted hover:text-foreground"
+                          )}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <span className="text-[9px] text-muted-foreground/60 uppercase whitespace-nowrap mt-0.5">
+                    {ALL_FACTORS.find(f => f.key === q.fator)?.label.split("/")[0]?.trim() || q.fator}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Resumo dos fatores calculados */}
+          {Object.keys(respostas).length > 0 && (
+            <div className="mt-6 border rounded-lg p-4 bg-card">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Fatores Calculados — {setorTipo}</h4>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                {activeFactors.map((f) => {
+                  const val = factors[f.key] || 0;
+                  const statusColor = val <= 30 ? "text-status-conforme" : val <= 50 ? "text-status-atencao" : val <= 70 ? "text-status-elevado" : "text-status-critico";
+                  return (
+                    <div key={f.key} className="text-center p-2 rounded-md border border-border">
+                      <p className="text-[9px] text-muted-foreground truncate mb-1">{f.label.split("/")[0]?.trim()}</p>
+                      <p className={cn("text-lg font-bold", statusColor)}>{val}%</p>
+                      <p className="text-[8px] text-muted-foreground">×{f.weight}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* ===== CHARTS SECTION ===== */}
