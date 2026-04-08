@@ -783,10 +783,10 @@ const ResultadoOrganizacional = () => {
           </div>
         </div>
 
-        {/* ===== PAGE 2: Charts + AIHA + Conclusion ===== */}
-        <div data-pdf-section className="print-page px-8 py-6 flex flex-col">
+        {/* ===== CHARTS SECTION ===== */}
+        <div data-pdf-section className="print-page px-8 py-6">
           <h3 className="text-sm font-bold text-foreground mb-3">Distribuição dos Fatores Psicossociais</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="border rounded-lg p-3 bg-card">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Barras</p>
               <FactorChart factors={chartData} />
@@ -803,7 +803,10 @@ const ResultadoOrganizacional = () => {
               <RadarFactorChart factors={radarData} />
             </div>
           </div>
+        </div>
 
+        {/* ===== AIHA MATRIX SECTION ===== */}
+        <div data-pdf-section className="px-8 py-6">
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col">
               <h3 className="text-sm font-bold text-foreground mb-2">Matriz AIHA — Avaliação de Risco</h3>
@@ -826,24 +829,24 @@ const ResultadoOrganizacional = () => {
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Recomendações — separate section */}
-          <div className="mt-4">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-bold text-foreground">Recomendações</h3>
-              <Button type="button" variant="outline" size="sm" onClick={addRecomendacao} className="print:hidden h-7 text-xs gap-1">+ Item</Button>
-            </div>
-            <div className="border rounded-lg p-3 bg-card space-y-2">
-              {recomendacoes.map((rec, i) => (
-                <div key={i} className="flex items-start gap-2">
-                  <span className="text-xs font-bold text-muted-foreground mt-2 min-w-[20px]">{i + 1}.</span>
-                  <Input value={rec} onChange={(e) => updateRecomendacao(i, e.target.value)} placeholder={`Recomendação ${i + 1}...`} className="h-8 text-sm bg-card border-border flex-1" />
-                  {recomendacoes.length > 1 && (
-                    <button onClick={() => removeRecomendacao(i)} className="print:hidden text-muted-foreground hover:text-destructive mt-1.5" title="Remover"><X className="h-4 w-4" /></button>
-                  )}
-                </div>
-              ))}
-            </div>
+        {/* ===== RECOMENDAÇÕES SECTION ===== */}
+        <div data-pdf-section className="px-8 py-4">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-bold text-foreground">Recomendações</h3>
+            <Button type="button" variant="outline" size="sm" onClick={addRecomendacao} className="print:hidden h-7 text-xs gap-1">+ Item</Button>
+          </div>
+          <div className="border rounded-lg p-3 bg-card space-y-2">
+            {recomendacoes.map((rec, i) => (
+              <div key={i} className="flex items-start gap-2">
+                <span className="text-xs font-bold text-muted-foreground mt-2 min-w-[20px]">{i + 1}.</span>
+                <Input value={rec} onChange={(e) => updateRecomendacao(i, e.target.value)} placeholder={`Recomendação ${i + 1}...`} className="h-8 text-sm bg-card border-border flex-1" />
+                {recomendacoes.length > 1 && (
+                  <button onClick={() => removeRecomendacao(i)} className="print:hidden text-muted-foreground hover:text-destructive mt-1.5" title="Remover"><X className="h-4 w-4" /></button>
+                )}
+              </div>
+            ))}
           </div>
         </div>
 
