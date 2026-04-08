@@ -743,7 +743,7 @@ const ResultadoOrganizacional = () => {
             {recomendacoes.map((rec, i) => (
               <div key={i} className="flex items-start gap-2">
                 <span className="text-xs font-bold text-muted-foreground mt-2 min-w-[20px]">{i + 1}.</span>
-                <Input value={rec} onChange={(e) => updateRecomendacao(i, e.target.value)} placeholder={`Recomendação ${i + 1}...`} className="h-8 text-sm bg-card border-border flex-1" />
+                <Textarea value={rec} onChange={(e) => updateRecomendacao(i, e.target.value)} placeholder={`Recomendação ${i + 1}...`} className="text-sm bg-card border-border flex-1 min-h-[36px] resize-none" rows={1} />
                 {recomendacoes.length > 1 && (
                   <button onClick={() => removeRecomendacao(i)} className="print:hidden text-muted-foreground hover:text-destructive mt-1.5" title="Remover"><X className="h-4 w-4" /></button>
                 )}
