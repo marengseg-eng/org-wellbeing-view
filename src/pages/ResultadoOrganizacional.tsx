@@ -296,6 +296,7 @@ const ResultadoOrganizacional = () => {
         setClassificacaoTecnica(d.classificacaoTecnica || "");
         setConclusao(d.conclusao || "");
         setRecomendacoes(d.recomendacoes || [""]);
+        setAcoes5w2hManual(d.acoes5w2hManual || d.acoes5w2h || []);
         setAcoes5w2hManual(d.acoes5w2h || []);
         toast.info(`Avaliação carregada: "${d.empresa}"${d.setorCustom || d.setor ? ` — ${d.setorCustom || d.setor}` : ""}`);
       } catch {}
@@ -390,14 +391,15 @@ const ResultadoOrganizacional = () => {
     const key = makeStorageKey(empresa, setorCustom);
     const payload = {
       empresa, cnpj, setorCustom, setor: setorCustom, setorTipo, dataAvaliacao, numEntrevistados,
-      factors, classificacaoTecnica, conclusao, recomendacoes, acoes5w2h,
+      factors, classificacaoTecnica, conclusao, recomendacoes,
+      acoes5w2h, acoes5w2hManual,
       savedAt: new Date().toISOString(),
     };
     localStorage.setItem(key, JSON.stringify(payload));
     setSavedEmpresas(getSavedEmpresas());
     setSavedSetores(getSavedSetores(empresa));
     toast.success(`Avaliação salva: "${empresa}"${setorCustom ? ` — ${setorCustom}` : ""}`);
-  }, [empresa, cnpj, setorCustom, setorTipo, dataAvaliacao, numEntrevistados, factors, classificacaoTecnica, conclusao, recomendacoes, acoes5w2h]);
+  }, [empresa, cnpj, setorCustom, setorTipo, dataAvaliacao, numEntrevistados, factors, classificacaoTecnica, conclusao, recomendacoes, acoes5w2h, acoes5w2hManual]);
 
   const handlePrint = useCallback(() => { window.print(); }, []);
 
