@@ -660,7 +660,7 @@ const ResultadoOrganizacional = () => {
                     <Label className="text-xs font-semibold text-foreground">{f.label}</Label>
                     <span className={cn("text-sm font-bold", textColor)}>{val}%</span>
                   </div>
-                  <p className="text-[9px] text-muted-foreground mb-2">Peso: ×{f.weight} • {f.nrRef}</p>
+                  <p className="text-[9px] text-muted-foreground mb-2">Peso: ×{f.weight} • {f.norma}</p>
                   <input
                     type="range"
                     min={0}
