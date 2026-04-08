@@ -11,16 +11,20 @@ export const ALL_FACTORS = [
   { key: "conflitos", label: "Conflitos Interpessoais/Clima Organizacional", weight: 1.0, norma: "NR-01 / ISO 45003" },
   { key: "emocional", label: "Demandas Emocionais/Desgaste Emocional", weight: 1.3, norma: "NR-01 / ISO 45003" },
   { key: "autonomia", label: "Autonomia/Controle sobre o Trabalho", weight: 1.0, norma: "NR-17 / NR-01" },
+  { key: "assedio_moral", label: "Assédio Moral", weight: 1.5, norma: "NR-01 / CLT / ISO 45003" },
+  { key: "assedio_verbal", label: "Assédio Verbal", weight: 1.4, norma: "NR-01 / CLT / ISO 45003" },
+  { key: "assedio_sexual", label: "Assédio Sexual", weight: 1.5, norma: "NR-01 / CLT / CP Art. 216-A" },
+  { key: "assedio_fisico", label: "Assédio Físico / Violência no Trabalho", weight: 1.5, norma: "NR-01 / CLT / ISO 45003" },
 ] as const;
 
 export type FactorKey = (typeof ALL_FACTORS)[number]["key"];
 
 export const SECTOR_FACTORS: Record<string, FactorKey[]> = {
-  GERAL: ["ritmo", "sobrecarga", "fadiga", "lideranca", "remuneracao", "estresse", "atencao", "conflitos", "emocional", "autonomia"],
-  "CONSTRUÇÃO": ["ritmo", "sobrecarga", "fadiga", "lideranca", "estresse", "atencao", "conflitos", "autonomia"],
-  "SAÚDE": ["ritmo", "sobrecarga", "fadiga", "estresse", "emocional", "conflitos", "lideranca", "autonomia"],
-  "ESCRITÓRIO": ["ritmo", "sobrecarga", "lideranca", "remuneracao", "estresse", "atencao", "autonomia", "emocional"],
-  "INDÚSTRIA": ["ritmo", "sobrecarga", "fadiga", "lideranca", "remuneracao", "estresse", "atencao", "conflitos", "autonomia"],
+  GERAL: ["ritmo", "sobrecarga", "fadiga", "lideranca", "remuneracao", "estresse", "atencao", "conflitos", "emocional", "autonomia", "assedio_moral", "assedio_verbal", "assedio_sexual", "assedio_fisico"],
+  "CONSTRUÇÃO": ["ritmo", "sobrecarga", "fadiga", "lideranca", "estresse", "atencao", "conflitos", "autonomia", "assedio_moral", "assedio_verbal", "assedio_fisico"],
+  "SAÚDE": ["ritmo", "sobrecarga", "fadiga", "estresse", "emocional", "conflitos", "lideranca", "autonomia", "assedio_moral", "assedio_verbal", "assedio_sexual"],
+  "ESCRITÓRIO": ["ritmo", "sobrecarga", "lideranca", "remuneracao", "estresse", "atencao", "autonomia", "emocional", "assedio_moral", "assedio_verbal", "assedio_sexual"],
+  "INDÚSTRIA": ["ritmo", "sobrecarga", "fadiga", "lideranca", "remuneracao", "estresse", "atencao", "conflitos", "autonomia", "assedio_moral", "assedio_verbal", "assedio_fisico"],
 };
 
 /* ========== RECOMENDAÇÕES TÉCNICAS POR FATOR ========== */
@@ -123,6 +127,46 @@ export const FACTOR_RECOMMENDATIONS: Record<FactorKey, string[]> = {
     "Permitir maior participação dos trabalhadores nas decisões.",
     "Revisar processos para garantir equilíbrio entre controle e flexibilidade.",
   ],
+  assedio_moral: [
+    "Implementar Política de Prevenção e Combate ao Assédio Moral conforme Lei 14.457/2022 e NR-01.",
+    "Criar e divulgar canal de denúncia anônimo, seguro e acessível a todos os trabalhadores.",
+    "Realizar treinamentos obrigatórios e periódicos sobre assédio moral para todos os níveis hierárquicos.",
+    "Instituir Comitê de Ética e Conduta para apuração e acompanhamento de denúncias.",
+    "Estabelecer política de tolerância zero ao assédio moral com medidas disciplinares claras.",
+    "Promover campanhas de conscientização sobre respeito, dignidade e saúde mental no trabalho.",
+    "Garantir acolhimento e suporte psicológico às vítimas de assédio moral.",
+    "Monitorar indicadores de clima organizacional relacionados ao assédio.",
+  ],
+  assedio_verbal: [
+    "Elaborar e divulgar Código de Conduta com diretrizes claras sobre comunicação respeitosa.",
+    "Realizar treinamentos em Comunicação Não Violenta (CNV) para lideranças e equipes.",
+    "Criar canal de denúncia para relatos de assédio verbal, garantindo anonimato e proteção ao denunciante.",
+    "Implementar mediação de conflitos por profissionais capacitados.",
+    "Promover campanhas educativas sobre o impacto do assédio verbal na saúde mental dos trabalhadores.",
+    "Estabelecer medidas disciplinares progressivas para condutas de assédio verbal.",
+    "Monitorar e documentar ocorrências para identificar padrões e áreas de maior incidência.",
+  ],
+  assedio_sexual: [
+    "Implementar Programa de Prevenção e Combate ao Assédio Sexual conforme Lei 14.457/2022.",
+    "Criar canal de denúncia seguro, anônimo e com protocolo específico para casos de assédio sexual.",
+    "Realizar treinamentos obrigatórios (mínimo anual) sobre prevenção ao assédio sexual — Lei 14.457/2022, Art. 23.",
+    "Incluir regras de conduta sobre assédio sexual nas normas internas da empresa.",
+    "Garantir acolhimento imediato, suporte psicológico e jurídico às vítimas.",
+    "Adotar medidas disciplinares rigorosas e imediatas contra agressores comprovados.",
+    "Fixar procedimentos para recebimento e acompanhamento de denúncias com sigilo absoluto.",
+    "Promover campanhas de conscientização com foco em consentimento e respeito no ambiente de trabalho.",
+  ],
+  assedio_fisico: [
+    "Realizar mapeamento de riscos de violência física nos ambientes de trabalho.",
+    "Implementar controle de acesso e medidas de segurança patrimonial nas áreas de risco.",
+    "Criar protocolo de resposta a incidentes de violência física com fluxo de atendimento imediato.",
+    "Realizar treinamentos em técnicas de desescalada e prevenção de conflitos físicos.",
+    "Garantir suporte médico, psicológico e jurídico imediato às vítimas de violência.",
+    "Estabelecer canal de denúncia específico para situações de violência e assédio físico.",
+    "Adotar medidas disciplinares rigorosas e afastamento imediato do agressor.",
+    "Promover cultura de paz e respeito mútuo no ambiente organizacional.",
+    "Documentar e investigar todos os incidentes para prevenção de reincidência.",
+  ],
 };
 
 /* ========== 5W2H TEMPLATES PER FACTOR ========== */
@@ -216,5 +260,41 @@ export const FACTOR_5W2H_TEMPLATES: Record<string, Omit<import("@/components/Pla
     who: "Lideranças e RH",
     how: "Delegação progressiva, autogestão, participação em decisões, equilíbrio controle/flexibilidade",
     howMuch: "Baixo custo — mudanças de gestão",
+  },
+  assedio_moral: {
+    what: "Implementar programa de prevenção e combate ao assédio moral",
+    why: "Fator Assédio Moral em nível elevado/crítico — NR-01/CLT/ISO 45003",
+    where: "Toda a organização",
+    when: "Imediato — 15 dias",
+    who: "RH, Jurídico, CIPA e Diretoria",
+    how: "Política de tolerância zero, canal de denúncia anônimo, treinamentos obrigatórios, comitê de ética",
+    howMuch: "Médio — treinamentos, consultoria jurídica e canal de denúncia",
+  },
+  assedio_verbal: {
+    what: "Estabelecer protocolos de comunicação respeitosa e combate ao assédio verbal",
+    why: "Fator Assédio Verbal em nível elevado/crítico — NR-01/CLT/ISO 45003",
+    where: "Toda a organização",
+    when: "Imediato — 15 dias",
+    who: "RH, Lideranças e CIPA",
+    how: "Código de conduta, treinamentos em comunicação não violenta, canal de denúncia, mediação de conflitos",
+    howMuch: "Baixo a médio — treinamentos internos",
+  },
+  assedio_sexual: {
+    what: "Implementar programa de prevenção e combate ao assédio sexual conforme Lei 14.457/2022",
+    why: "Fator Assédio Sexual em nível elevado/crítico — NR-01/CLT/CP Art. 216-A",
+    where: "Toda a organização",
+    when: "Imediato — 15 dias",
+    who: "RH, Jurídico, CIPA e Diretoria",
+    how: "Canal de denúncia seguro e anônimo, treinamentos obrigatórios (Lei 14.457/2022), acolhimento às vítimas, medidas disciplinares rigorosas",
+    howMuch: "Médio a alto — estrutura de compliance e suporte psicológico",
+  },
+  assedio_fisico: {
+    what: "Implementar medidas de prevenção à violência e assédio físico no trabalho",
+    why: "Fator Assédio Físico/Violência em nível elevado/crítico — NR-01/CLT/ISO 45003",
+    where: "Toda a organização — ênfase em áreas de risco",
+    when: "Imediato — 15 dias",
+    who: "SESMT, Segurança Patrimonial, RH e Diretoria",
+    how: "Mapeamento de riscos de violência, controle de acesso, treinamentos em desescalada, protocolo de resposta a incidentes, suporte às vítimas",
+    howMuch: "Médio a alto — infraestrutura de segurança e suporte",
   },
 };
