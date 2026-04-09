@@ -770,9 +770,39 @@ const ResultadoOrganizacional = () => {
               <ClipboardList className="h-4 w-4 text-primary" />
               <h3 className="text-sm font-bold text-foreground">Plano de Ação — 5W2H</h3>
             </div>
-            <span className="text-[10px] text-muted-foreground italic print:hidden">
-              Alinhado às recomendações • Editável
-            </span>
+            <div className="flex items-center gap-2 print:hidden">
+              <Button type="button" variant="default" size="sm" onClick={() => {
+                // Force regenerate 5W2H from current recommendations
+                const filteredRecs = recomendacoes.filter((r) => r.trim() && !r.startsWith("["));
+                const generated: Acao5W2H[] = filteredRecs.map((rec, i) => {
+                  const matchingFactor = activeFactors.find(f => {
+                    const def = factorDefinitions[f.key];
+                    return def?.recommendations?.some(r => rec.includes(r.substring(0, 30)));
+                  });
+                  const def = matchingFactor ? factorDefinitions[matchingFactor.key] : undefined;
+                  const template = def?.actionPlan5w2h?.find(t => rec.includes(t.what.substring(0, 20)));
+                  return {
+                    id: `rec-${i}`,
+                    what: rec,
+                    why: template?.why || def?.normRef || "Conformidade NR-17 / NR-01",
+                    where: template?.where || empresa || "Organização",
+                    when: template?.when || "90 dias",
+                    who: template?.who || "SST / RH",
+                    how: template?.how || "",
+                    howMuch: template?.howMuch || "A definir",
+                    status: "pendente" as const,
+                  };
+                });
+                setAcoes5w2hManual(generated);
+                toast.success(`Plano de ação gerado com ${generated.length} ações.`);
+              }} className="h-7 text-xs gap-1">
+                <ClipboardList className="h-3 w-3" />
+                Gerar Plano de Ação
+              </Button>
+              <span className="text-[10px] text-muted-foreground italic">
+                Alinhado às recomendações
+              </span>
+            </div>
           </div>
           <p className="text-[11px] text-muted-foreground mb-3">
             Ações detalhadas para cada fator psicossocial, alinhadas às recomendações acima.
