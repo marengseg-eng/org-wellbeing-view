@@ -772,19 +772,18 @@ const ResultadoOrganizacional = () => {
             </div>
             <div className="flex items-center gap-2 print:hidden">
               <Button type="button" variant="default" size="sm" onClick={() => {
-                // Force regenerate 5W2H from current recommendations
                 const filteredRecs = recomendacoes.filter((r) => r.trim() && !r.startsWith("["));
                 const generated: Acao5W2H[] = filteredRecs.map((rec, i) => {
-                  const matchingFactor = activeFactors.find(f => {
-                    const def = factorDefinitions[f.key];
-                    return def?.recommendations?.some(r => rec.includes(r.substring(0, 30)));
-                  });
-                  const def = matchingFactor ? factorDefinitions[matchingFactor.key] : undefined;
-                  const template = def?.actionPlan5w2h?.find(t => rec.includes(t.what.substring(0, 20)));
+                  const factorKey = activeFactors.find(f => {
+                    const recs = FACTOR_RECOMMENDATIONS[f.key as FactorKey];
+                    return recs?.some((r: string) => rec.includes(r.substring(0, 30)));
+                  })?.key as string | undefined;
+                  const template = factorKey ? FACTOR_5W2H_TEMPLATES[factorKey] : undefined;
+                  const factorDef = factorKey ? ALL_FACTORS.find(f => f.key === factorKey) : undefined;
                   return {
                     id: `rec-${i}`,
                     what: rec,
-                    why: template?.why || def?.normRef || "Conformidade NR-17 / NR-01",
+                    why: template?.why || factorDef?.norma || "Conformidade NR-17 / NR-01",
                     where: template?.where || empresa || "Organização",
                     when: template?.when || "90 dias",
                     who: template?.who || "SST / RH",
