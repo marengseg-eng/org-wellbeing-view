@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { NavLink } from "@/components/NavLink";
 
 import { ALL_FACTORS, SECTOR_FACTORS, FACTOR_5W2H_TEMPLATES, FACTOR_RECOMMENDATIONS, type FactorKey } from "@/data/factorDefinitions";
 
@@ -510,6 +511,23 @@ const ResultadoOrganizacional = () => {
             <p className="text-[11px] text-white/50 mt-0.5">Gerenciamento de Riscos Psicossociais — NR-1</p>
           </div>
           <div className="flex-shrink-0 flex items-center gap-3">
+            {/* Nav links */}
+            <div className="hidden sm:flex items-center gap-1 print:hidden">
+              <NavLink
+                to="/"
+                className="px-3 py-1.5 rounded-md text-xs font-semibold text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+                activeClassName="bg-white/15 text-white"
+              >
+                Psicossocial
+              </NavLink>
+              <NavLink
+                to="/checklist"
+                className="px-3 py-1.5 rounded-md text-xs font-semibold text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+                activeClassName="bg-white/15 text-white"
+              >
+                Checklist SST
+              </NavLink>
+            </div>
             {/* Theme toggle */}
             <button
               onClick={() => setIsDark(!isDark)}
