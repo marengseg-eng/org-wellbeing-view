@@ -294,35 +294,114 @@ const ChecklistSST = () => {
   }, []);
 
   const handleExportHTML = useCallback(() => {
-    const statusLabel: Record<ItemStatus, string> = {
-      conforme: "✅ Conforme",
-      nao_conforme: "❌ Não Conforme",
-      nao_aplicavel: "➖ N/A",
-      pendente: "⏳ Pendente",
+    const statusConfig: Record<ItemStatus, { label: string; bg: string; color: string; border: string }> = {
+      conforme:      { label: "✔ Conforme",      bg: "#dcfce7", color: "#15803d", border: "#86efac" },
+      nao_conforme:  { label: "✘ Não Conforme",  bg: "#fee2e2", color: "#b91c1c", border: "#fca5a5" },
+      nao_aplicavel: { label: "— N/A",            bg: "#f1f5f9", color: "#64748b", border: "#cbd5e1" },
+      pendente:      { label: "⏳ Pendente",      bg: "#fefce8", color: "#a16207", border: "#fde047" },
     };
 
-    const rows = items.map((item) => `
-      <tr>
-        <td style="padding:6px 10px;border:1px solid #e2e8f0;font-size:11px;white-space:nowrap">${item.norma}</td>
-        <td style="padding:6px 10px;border:1px solid #e2e8f0;font-size:11px">${item.categoria}</td>
-        <td style="padding:6px 10px;border:1px solid #e2e8f0;font-size:11px">${item.descricao}</td>
-        <td style="padding:6px 10px;border:1px solid #e2e8f0;font-size:11px;white-space:nowrap">${statusLabel[item.status]}</td>
-        <td style="padding:6px 10px;border:1px solid #e2e8f0;font-size:11px">${item.observacao || ""}</td>
-      </tr>`).join("");
+    const categorias = CHECKLIST_CATEGORIAS as readonly string[];
+
+    const categorySections = categorias.map((cat) => {
+      const catItems = items.filter((i) => i.categoria === cat);
+      const catConforme = catItems.filter((i) => i.status === "conforme").length;
+      const catNaoConforme = catItems.filter((i) => i.status === "nao_conforme").length;
+      const catRows = catItems.map((item, idx) => {
+        const sc = statusConfig[item.status];
+        return `<tr style="background:${idx % 2 === 0 ? "#ffffff" : "#f8fafc"}">
+          <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;font-size:11px;color:#475569;white-space:nowrap;width:130px">${item.norma}</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;font-size:12px;color:#1e293b">${item.descricao}</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;text-align:center;width:130px">
+            <span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:${sc.bg};color:${sc.color};border:1px solid ${sc.border}">${sc.label}</span>
+          </td>
+          <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;font-size:11px;color:#64748b;min-width:160px">${item.observacao || "<span style='color:#cbd5e1'>—</span>"}</td>
+        </tr>`;
+      }).join("");
+
+      return `
+      <div style="margin-bottom:32px">
+        <div style="display:flex;align-items:center;justify-content:space-between;background:#0f172a;border-radius:8px 8px 0 0;padding:10px 16px">
+          <span style="color:#fff;font-weight:700;font-size:13px;letter-spacing:.5px">${cat}</span>
+          <span style="color:#94a3b8;font-size:11px">${catConforme} conformes · ${catNaoConforme} não conformes · ${catItems.length} total</span>
+        </div>
+        <table style="width:100%;border-collapse:collapse;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 8px 8px;overflow:hidden">
+          <thead>
+            <tr style="background:#f1f5f9">
+              <th style="padding:8px 12px;text-align:left;font-size:11px;color:#64748b;font-weight:600;border-bottom:1px solid #e2e8f0">Norma</th>
+              <th style="padding:8px 12px;text-align:left;font-size:11px;color:#64748b;font-weight:600;border-bottom:1px solid #e2e8f0">Item</th>
+              <th style="padding:8px 12px;text-align:center;font-size:11px;color:#64748b;font-weight:600;border-bottom:1px solid #e2e8f0">Status</th>
+              <th style="padding:8px 12px;text-align:left;font-size:11px;color:#64748b;font-weight:600;border-bottom:1px solid #e2e8f0">Observação</th>
+            </tr>
+          </thead>
+          <tbody>${catRows}</tbody>
+        </table>
+      </div>`;
+    }).join("");
+
+    const progressColor = compliancePct >= 80 ? "#16a34a" : compliancePct >= 60 ? "#d97706" : "#dc2626";
+    const dataFormatada = new Date(dataInspecao + "T12:00:00").toLocaleDateString("pt-BR");
 
     const html = `<!DOCTYPE html>
 <html lang="pt-BR">
-<head><meta charset="UTF-8"><title>Checklist SST — ${empresa}</title>
-<style>body{font-family:Arial,sans-serif;padding:20px}table{border-collapse:collapse;width:100%}th{background:#0f172a;color:#fff;padding:8px 10px;font-size:11px;text-align:left}tr:nth-child(even){background:#f8fafc}</style>
+<head>
+<meta charset="UTF-8">
+<title>Checklist SST — ${empresa}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f8fafc; color: #1e293b; }
+  @media print { body { background: white; } .no-print { display: none; } }
+</style>
 </head>
 <body>
-<h2 style="margin:0 0 4px">LBM BORATTI — Checklist SST</h2>
-<p style="margin:0 0 4px;font-size:12px">Empresa: <strong>${empresa}</strong>${setor ? ` | Setor: <strong>${setor}</strong>` : ""} | Responsável: <strong>${responsavel || "—"}</strong> | Data: <strong>${dataInspecao}</strong></p>
-<p style="margin:0 0 16px;font-size:12px">Conformidade: <strong>${compliancePct}%</strong> | Conforme: ${conformeCount} | Não Conforme: ${naoConformeCount} | N/A: ${naCount} | Pendente: ${pendingCount}</p>
-<table>
-<thead><tr><th>Norma</th><th>Categoria</th><th>Item</th><th>Status</th><th>Observação</th></tr></thead>
-<tbody>${rows}</tbody>
-</table>
+  <!-- HEADER -->
+  <div style="background:#0f172a;padding:24px 40px;display:flex;align-items:center;gap:24px">
+    <div style="border-left:4px solid #3b82f6;padding-left:16px">
+      <div style="color:#fff;font-size:20px;font-weight:800;letter-spacing:.5px">LBM BORATTI</div>
+      <div style="color:#94a3b8;font-size:12px;margin-top:2px">Checklist de Auditoria SST — Conformidade Normativa</div>
+    </div>
+  </div>
+  <div style="height:4px;background:linear-gradient(90deg,#1e4a7a,#3b82f6)"></div>
+
+  <!-- IDENTIFICAÇÃO -->
+  <div style="background:#fff;padding:24px 40px;border-bottom:1px solid #e2e8f0">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px">
+      <div><div style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Empresa</div><div style="font-size:14px;font-weight:700;color:#1e293b">${empresa || "—"}</div></div>
+      <div><div style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Responsável</div><div style="font-size:14px;font-weight:700;color:#1e293b">${responsavel || "—"}</div></div>
+      <div><div style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Setor / Área</div><div style="font-size:14px;font-weight:700;color:#1e293b">${setor || "—"}</div></div>
+      <div><div style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Data da Inspeção</div><div style="font-size:14px;font-weight:700;color:#1e293b">${dataFormatada}</div></div>
+    </div>
+
+    <!-- RESUMO -->
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px">
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 16px"><div style="font-size:10px;color:#94a3b8;font-weight:600;text-transform:uppercase">Total</div><div style="font-size:22px;font-weight:800;color:#1e293b">${totalItems}</div></div>
+      <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:12px 16px"><div style="font-size:10px;color:#16a34a;font-weight:600;text-transform:uppercase">Conformes</div><div style="font-size:22px;font-weight:800;color:#16a34a">${conformeCount}</div></div>
+      <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:12px 16px"><div style="font-size:10px;color:#dc2626;font-weight:600;text-transform:uppercase">Não Conformes</div><div style="font-size:22px;font-weight:800;color:#dc2626">${naoConformeCount}</div></div>
+      <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:12px 16px"><div style="font-size:10px;color:#64748b;font-weight:600;text-transform:uppercase">N/A</div><div style="font-size:22px;font-weight:800;color:#64748b">${naCount}</div></div>
+      <div style="background:#fefce8;border:1px solid #fde047;border-radius:8px;padding:12px 16px"><div style="font-size:10px;color:#a16207;font-weight:600;text-transform:uppercase">Pendentes</div><div style="font-size:22px;font-weight:800;color:#a16207">${pendingCount}</div></div>
+    </div>
+
+    <!-- BARRA DE PROGRESSO -->
+    <div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:11px;font-weight:600;color:#64748b">Conformidade Geral</span>
+        <span style="font-size:13px;font-weight:800;color:${progressColor}">${compliancePct}%</span>
+      </div>
+      <div style="height:10px;background:#e2e8f0;border-radius:99px;overflow:hidden">
+        <div style="height:100%;width:${compliancePct}%;background:${progressColor};border-radius:99px;transition:width .5s"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ITENS POR CATEGORIA -->
+  <div style="padding:32px 40px">
+    ${categorySections}
+  </div>
+
+  <!-- RODAPÉ -->
+  <div style="background:#0f172a;padding:16px 40px;text-align:center">
+    <span style="color:#475569;font-size:11px">LBM BORATTI — Consultoria em SST · Relatório gerado em ${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
+  </div>
 </body></html>`;
 
     const blob = new Blob([html], { type: "text/html;charset=utf-8" });
@@ -332,8 +411,8 @@ const ChecklistSST = () => {
     a.download = `checklist-sst-${empresa.toLowerCase().replace(/\s+/g, "-") || "boratti"}.html`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("Relatório HTML exportado.");
-  }, [empresa, responsavel, dataInspecao, setor, items, compliancePct, conformeCount, naoConformeCount, naCount, pendingCount]);
+    toast.success("Relatório exportado com sucesso!");
+  }, [empresa, responsavel, dataInspecao, setor, items, compliancePct, conformeCount, naoConformeCount, naCount, pendingCount, totalItems]);
 
   /* ===== STYLES ===== */
 
