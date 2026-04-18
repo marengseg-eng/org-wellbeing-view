@@ -1,9 +1,12 @@
 import React, { useState, useMemo, useCallback } from "react";
 import logoLbm from "@/assets/logo-lbm.jpg";
 import {
-  Sun, Moon, Save, Download, RotateCcw,
+  Sun, Moon, Save, FileText, RotateCcw,
   ChevronDown, ChevronUp, CheckCircle2, XCircle, MinusCircle, AlertCircle, User, Calendar,
 } from "lucide-react";
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LabelList,
+} from "recharts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -306,6 +309,17 @@ const ChecklistSST = () => {
   const progressColor =
     compliancePct >= 80 ? "hsl(152,60%,42%)" : compliancePct >= 60 ? "hsl(45,93%,47%)" : "hsl(0,72%,51%)";
 
+  const categoryStats = useMemo(() =>
+    (CHECKLIST_CATEGORIAS as readonly string[]).map((cat) => {
+      const catItems = items.filter((i) => i.categoria === cat);
+      const applicable = catItems.filter((i) => i.status !== "nao_aplicavel");
+      const conforme = catItems.filter((i) => i.status === "conforme").length;
+      const naoConforme = catItems.filter((i) => i.status === "nao_conforme").length;
+      const pct = applicable.length > 0 ? Math.round((conforme / applicable.length) * 100) : 0;
+      const shortName = cat.length > 12 ? cat.split(" ")[0] : cat;
+      return { cat, shortName, pct, conforme, naoConforme, total: catItems.length };
+    }), [items]);
+
   const filteredItems = useMemo(
     () => (activeTab === "Todos" ? items : items.filter((i) => i.categoria === activeTab)),
     [items, activeTab]
@@ -343,7 +357,7 @@ const ChecklistSST = () => {
     toast.info("Checklist reiniciado.");
   }, []);
 
-  const handleExportHTML = useCallback(() => {
+  const handleExportPDF = useCallback(() => {
     const statusConfig: Record<ItemStatus, { label: string; bg: string; color: string; border: string }> = {
       conforme:      { label: "✔ Conforme",      bg: "#dcfce7", color: "#15803d", border: "#86efac" },
       nao_conforme:  { label: "✘ Não Conforme",  bg: "#fee2e2", color: "#b91c1c", border: "#fca5a5" },
@@ -397,56 +411,95 @@ const ChecklistSST = () => {
       </div>`;
     }).join("");
 
-    const progressColor = compliancePct >= 80 ? "#16a34a" : compliancePct >= 60 ? "#d97706" : "#dc2626";
+    const pColor = compliancePct >= 80 ? "#16a34a" : compliancePct >= 60 ? "#d97706" : "#dc2626";
     const dataFormatada = new Date(dataInspecao + "T12:00:00").toLocaleDateString("pt-BR");
+
+    // chart SVG bars
+    const barWidth = 44, barGap = 18, chartH = 160, chartPadTop = 20;
+    const chartW = categoryStats.length * (barWidth + barGap);
+    const bars = categoryStats.map((s, i) => {
+      const bh = Math.round((s.pct / 100) * (chartH - chartPadTop));
+      const x = i * (barWidth + barGap);
+      const color = s.pct >= 80 ? "#16a34a" : s.pct >= 60 ? "#d97706" : s.pct > 0 ? "#dc2626" : "#cbd5e1";
+      return `
+        <rect x="${x}" y="${chartH - bh}" width="${barWidth}" height="${bh}" fill="${color}" rx="4"/>
+        <text x="${x + barWidth / 2}" y="${chartH - bh - 4}" text-anchor="middle" font-size="10" font-weight="700" fill="${color}">${s.pct > 0 ? s.pct + "%" : ""}</text>
+        <text x="${x + barWidth / 2}" y="${chartH + 14}" text-anchor="middle" font-size="9" fill="#64748b">${s.shortName}</text>
+        <text x="${x + barWidth / 2}" y="${chartH + 25}" text-anchor="middle" font-size="8" fill="#94a3b8">${s.conforme}/${s.total}</text>`;
+    }).join("");
 
     const html = `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Checklist SST — ${empresa}</title>
+<title>Relatório SST — ${empresa}</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Segoe UI', Arial, sans-serif; background: #f8fafc; color: #1e293b; }
-  @media print { body { background: white; } .no-print { display: none; } }
+  @media print {
+    body { background: white; }
+    .no-print { display: none !important; }
+    .page-break { page-break-before: always; }
+    @page { margin: 15mm; }
+  }
 </style>
 </head>
 <body>
+
+  <!-- BOTÃO SALVAR PDF -->
+  <div class="no-print" style="background:#1e293b;padding:12px 40px;display:flex;align-items:center;justify-content:space-between">
+    <span style="color:#94a3b8;font-size:12px">Relatório SST — ${empresa} · ${dataFormatada}</span>
+    <button onclick="window.print()" style="background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer">⬇ Salvar como PDF</button>
+  </div>
+
   <!-- HEADER -->
-  <div style="background:#0f172a;padding:24px 40px;display:flex;align-items:center;gap:24px">
+  <div style="background:#0f172a;padding:24px 40px;display:flex;align-items:center;justify-content:space-between">
     <div style="border-left:4px solid #3b82f6;padding-left:16px">
-      <div style="color:#fff;font-size:20px;font-weight:800;letter-spacing:.5px">LBM BORATTI</div>
-      <div style="color:#94a3b8;font-size:12px;margin-top:2px">Checklist de Auditoria SST — Conformidade Normativa</div>
+      <div style="color:#fff;font-size:22px;font-weight:800;letter-spacing:.5px">LBM BORATTI</div>
+      <div style="color:#94a3b8;font-size:12px;margin-top:3px">Relatório de Auditoria SST — Conformidade Normativa</div>
+    </div>
+    <div style="text-align:right">
+      <div style="color:#64748b;font-size:11px">Gerado em</div>
+      <div style="color:#e2e8f0;font-size:13px;font-weight:700">${new Date().toLocaleDateString("pt-BR")} · ${new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</div>
     </div>
   </div>
   <div style="height:4px;background:linear-gradient(90deg,#1e4a7a,#3b82f6)"></div>
 
-  <!-- IDENTIFICAÇÃO -->
-  <div style="background:#fff;padding:24px 40px;border-bottom:1px solid #e2e8f0">
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px">
-      <div><div style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Empresa</div><div style="font-size:14px;font-weight:700;color:#1e293b">${empresa || "—"}</div></div>
-      <div><div style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Responsável</div><div style="font-size:14px;font-weight:700;color:#1e293b">${responsavel || "—"}</div></div>
-      <div><div style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Setor / Área</div><div style="font-size:14px;font-weight:700;color:#1e293b">${setor || "—"}</div></div>
-      <div><div style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Data da Inspeção</div><div style="font-size:14px;font-weight:700;color:#1e293b">${dataFormatada}</div></div>
+  <!-- IDENTIFICAÇÃO + RESUMO -->
+  <div style="background:#fff;padding:28px 40px;border-bottom:1px solid #e2e8f0">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px">
+      <div><div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px">Empresa</div><div style="font-size:15px;font-weight:700;color:#1e293b">${empresa || "—"}</div></div>
+      <div><div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px">Responsável</div><div style="font-size:15px;font-weight:700;color:#1e293b">${responsavel || "—"}</div></div>
+      <div><div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px">Setor / Área</div><div style="font-size:15px;font-weight:700;color:#1e293b">${setor || "—"}</div></div>
+      <div><div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px">Data da Inspeção</div><div style="font-size:15px;font-weight:700;color:#1e293b">${dataFormatada}</div></div>
     </div>
 
-    <!-- RESUMO -->
-    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px">
-      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 16px"><div style="font-size:10px;color:#94a3b8;font-weight:600;text-transform:uppercase">Total</div><div style="font-size:22px;font-weight:800;color:#1e293b">${totalItems}</div></div>
-      <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:12px 16px"><div style="font-size:10px;color:#16a34a;font-weight:600;text-transform:uppercase">Conformes</div><div style="font-size:22px;font-weight:800;color:#16a34a">${conformeCount}</div></div>
-      <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:12px 16px"><div style="font-size:10px;color:#dc2626;font-weight:600;text-transform:uppercase">Não Conformes</div><div style="font-size:22px;font-weight:800;color:#dc2626">${naoConformeCount}</div></div>
-      <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:12px 16px"><div style="font-size:10px;color:#64748b;font-weight:600;text-transform:uppercase">N/A</div><div style="font-size:22px;font-weight:800;color:#64748b">${naCount}</div></div>
-      <div style="background:#fefce8;border:1px solid #fde047;border-radius:8px;padding:12px 16px"><div style="font-size:10px;color:#a16207;font-weight:600;text-transform:uppercase">Pendentes</div><div style="font-size:22px;font-weight:800;color:#a16207">${pendingCount}</div></div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px">
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px 16px"><div style="font-size:10px;color:#94a3b8;font-weight:700;text-transform:uppercase;margin-bottom:4px">Total</div><div style="font-size:26px;font-weight:800;color:#1e293b">${totalItems}</div></div>
+      <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:14px 16px"><div style="font-size:10px;color:#16a34a;font-weight:700;text-transform:uppercase;margin-bottom:4px">Conformes</div><div style="font-size:26px;font-weight:800;color:#16a34a">${conformeCount}</div></div>
+      <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;padding:14px 16px"><div style="font-size:10px;color:#dc2626;font-weight:700;text-transform:uppercase;margin-bottom:4px">Não Conformes</div><div style="font-size:26px;font-weight:800;color:#dc2626">${naoConformeCount}</div></div>
+      <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;padding:14px 16px"><div style="font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;margin-bottom:4px">N/A</div><div style="font-size:26px;font-weight:800;color:#64748b">${naCount}</div></div>
+      <div style="background:#fefce8;border:1px solid #fde047;border-radius:10px;padding:14px 16px"><div style="font-size:10px;color:#a16207;font-weight:700;text-transform:uppercase;margin-bottom:4px">Pendentes</div><div style="font-size:26px;font-weight:800;color:#a16207">${pendingCount}</div></div>
     </div>
 
-    <!-- BARRA DE PROGRESSO -->
-    <div>
-      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-        <span style="font-size:11px;font-weight:600;color:#64748b">Conformidade Geral</span>
-        <span style="font-size:13px;font-weight:800;color:${progressColor}">${compliancePct}%</span>
+    <div style="margin-bottom:28px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:12px;font-weight:700;color:#64748b">CONFORMIDADE GERAL</span>
+        <span style="font-size:18px;font-weight:800;color:${pColor}">${compliancePct}%</span>
       </div>
-      <div style="height:10px;background:#e2e8f0;border-radius:99px;overflow:hidden">
-        <div style="height:100%;width:${compliancePct}%;background:${progressColor};border-radius:99px;transition:width .5s"></div>
+      <div style="height:12px;background:#e2e8f0;border-radius:99px;overflow:hidden">
+        <div style="height:100%;width:${compliancePct}%;background:${pColor};border-radius:99px"></div>
+      </div>
+    </div>
+
+    <!-- GRÁFICO POR CATEGORIA (SVG) -->
+    <div>
+      <div style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">Conformidade por Categoria</div>
+      <div style="overflow-x:auto">
+        <svg width="${chartW}" height="${chartH + 40}" viewBox="0 0 ${chartW} ${chartH + 40}" xmlns="http://www.w3.org/2000/svg">
+          <line x1="0" y1="${chartH}" x2="${chartW}" y2="${chartH}" stroke="#e2e8f0" stroke-width="1"/>
+          ${bars}
+        </svg>
       </div>
     </div>
   </div>
@@ -457,8 +510,9 @@ const ChecklistSST = () => {
   </div>
 
   <!-- RODAPÉ -->
-  <div style="background:#0f172a;padding:16px 40px;text-align:center">
-    <span style="color:#475569;font-size:11px">LBM BORATTI — Consultoria em SST · Relatório gerado em ${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
+  <div style="background:#0f172a;padding:16px 40px;display:flex;justify-content:space-between;align-items:center">
+    <span style="color:#475569;font-size:11px">LBM BORATTI — Consultoria em Saúde e Segurança do Trabalho</span>
+    <span style="color:#334155;font-size:11px">Documento gerado em ${new Date().toLocaleDateString("pt-BR")} · Confidencial</span>
   </div>
 </body></html>`;
 
@@ -466,11 +520,11 @@ const ChecklistSST = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `checklist-sst-${empresa.toLowerCase().replace(/\s+/g, "-") || "boratti"}.html`;
+    a.download = `relatorio-sst-${empresa.toLowerCase().replace(/\s+/g, "-") || "boratti"}-${dataInspecao}.html`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("Relatório exportado com sucesso!");
-  }, [empresa, responsavel, dataInspecao, setor, items, compliancePct, conformeCount, naoConformeCount, naCount, pendingCount, totalItems]);
+    toast.success("Relatório gerado! Abra o arquivo e clique em 'Salvar como PDF'.");
+  }, [empresa, responsavel, dataInspecao, setor, items, compliancePct, conformeCount, naoConformeCount, naCount, pendingCount, totalItems, categoryStats]);
 
   /* ===== STYLES ===== */
 
@@ -598,6 +652,36 @@ const ChecklistSST = () => {
         </div>
       </div>
 
+      {/* ===== CHART BY CATEGORY ===== */}
+      <div className="px-6 pb-4">
+        <p className="text-[11px] font-semibold uppercase tracking-wider mb-3" style={{ color: textMuted }}>
+          Conformidade por Categoria
+        </p>
+        <div style={{ background: cardBg, border: `1px solid ${borderColor}`, borderRadius: 10, padding: "16px 8px 4px" }}>
+          <ResponsiveContainer width="100%" height={180}>
+            <BarChart data={categoryStats} margin={{ top: 16, right: 8, left: -24, bottom: 8 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#1e293b" : "#e2e8f0"} vertical={false} />
+              <XAxis dataKey="shortName" tick={{ fontSize: 10, fill: textMuted }} axisLine={false} tickLine={false} />
+              <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: textMuted }} axisLine={false} tickLine={false} unit="%" />
+              <Tooltip
+                formatter={(v: number) => [`${v}%`, "Conformidade"]}
+                contentStyle={{ background: isDark ? "#0f172a" : "#fff", border: `1px solid ${borderColor}`, borderRadius: 8, fontSize: 12 }}
+                labelStyle={{ color: textMain, fontWeight: 700 }}
+              />
+              <Bar dataKey="pct" radius={[4, 4, 0, 0]} maxBarSize={48}>
+                <LabelList dataKey="pct" position="top" formatter={(v: number) => v > 0 ? `${v}%` : ""} style={{ fontSize: 10, fontWeight: 700, fill: textMuted }} />
+                {categoryStats.map((s) => (
+                  <Cell
+                    key={s.cat}
+                    fill={s.pct >= 80 ? "hsl(152,60%,42%)" : s.pct >= 60 ? "hsl(45,93%,47%)" : s.pct > 0 ? "hsl(0,72%,51%)" : (isDark ? "#1e293b" : "#e2e8f0")}
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
       {/* ===== CHECKLIST TABS ===== */}
       <div className="flex-1 px-6 pb-24">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -663,9 +747,9 @@ const ChecklistSST = () => {
             <Save className="h-4 w-4" />
             Salvar
           </Button>
-          <Button onClick={handleExportHTML} variant="outline" size="sm" className="flex items-center gap-2">
-            <Download className="h-4 w-4" />
-            Exportar HTML
+          <Button onClick={handleExportPDF} variant="outline" size="sm" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Exportar Relatório
           </Button>
           <Button onClick={handleReset} variant="outline" size="sm" className="flex items-center gap-2">
             <RotateCcw className="h-4 w-4" />
