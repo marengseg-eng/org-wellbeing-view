@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback } from "react";
 import logoLbm from "@/assets/logo-lbm.jpg";
 import {
   Sun, Moon, Save, Download, RotateCcw,
-  ChevronDown, ChevronUp, CheckCircle2, XCircle, MinusCircle, AlertCircle,
+  ChevronDown, ChevronUp, CheckCircle2, XCircle, MinusCircle, AlertCircle, User, Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +26,8 @@ export interface ChecklistItem {
   norma: string;
   status: ItemStatus;
   observacao: string;
+  responsavelCorrecao: string;
+  prazoCorrecao: string;
 }
 
 export interface ChecklistItemTemplate {
@@ -55,7 +57,13 @@ const makeStorageKey = (empresa: string, setor: string) => {
 };
 
 const getInitialItems = (): ChecklistItem[] =>
-  CHECKLIST_ITEMS_TEMPLATE.map((t) => ({ ...t, status: "pendente" as ItemStatus, observacao: "" }));
+  CHECKLIST_ITEMS_TEMPLATE.map((t) => ({
+    ...t,
+    status: "pendente" as ItemStatus,
+    observacao: "",
+    responsavelCorrecao: "",
+    prazoCorrecao: "",
+  }));
 
 /* ===== STATUS CONFIG ===== */
 
@@ -115,21 +123,30 @@ interface ChecklistItemRowProps {
   isDark: boolean;
   onStatusChange: (id: string, status: ItemStatus) => void;
   onObservacaoChange: (id: string, obs: string) => void;
+  onResponsavelChange: (id: string, val: string) => void;
+  onPrazoChange: (id: string, val: string) => void;
 }
 
-const ChecklistItemRow = React.memo(({ item, isDark, onStatusChange, onObservacaoChange }: ChecklistItemRowProps) => {
+const ChecklistItemRow = React.memo(({
+  item, isDark, onStatusChange, onObservacaoChange, onResponsavelChange, onPrazoChange,
+}: ChecklistItemRowProps) => {
   const [expanded, setExpanded] = useState(false);
   const config = STATUS_CONFIG[item.status];
-  const cardBg = isDark ? "#0f172a" : "#ffffff";
   const borderBase = isDark ? "#1e293b" : "#e2e8f0";
   const textMain = isDark ? "#e2e8f0" : "#1e293b";
   const textMuted = isDark ? "#64748b" : "#94a3b8";
+  const isNaoConforme = item.status === "nao_conforme";
 
   const STATUS_BUTTONS: { status: ItemStatus; label: string; icon: React.ReactNode }[] = [
     { status: "conforme", label: "Conforme", icon: <CheckCircle2 className="h-3.5 w-3.5" /> },
     { status: "nao_conforme", label: "Não Conforme", icon: <XCircle className="h-3.5 w-3.5" /> },
     { status: "nao_aplicavel", label: "N/A", icon: <MinusCircle className="h-3.5 w-3.5" /> },
   ];
+
+  const handleStatusClick = (status: ItemStatus) => {
+    onStatusChange(item.id, status);
+    if (status === "nao_conforme") setExpanded(true);
+  };
 
   return (
     <div
@@ -142,7 +159,6 @@ const ChecklistItemRow = React.memo(({ item, isDark, onStatusChange, onObservaca
     >
       {/* Main row */}
       <div className="flex items-start gap-3 px-4 py-3">
-        {/* NR badge */}
         <span
           className="mt-0.5 shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider"
           style={{ background: isDark ? "#1e293b" : "#e2e8f0", color: textMuted, whiteSpace: "nowrap" }}
@@ -150,12 +166,10 @@ const ChecklistItemRow = React.memo(({ item, isDark, onStatusChange, onObservaca
           {item.norma}
         </span>
 
-        {/* Description */}
         <p className="flex-1 text-sm leading-snug" style={{ color: textMain }}>
           {item.descricao}
         </p>
 
-        {/* Status buttons */}
         <div className="flex items-center gap-1 shrink-0">
           {STATUS_BUTTONS.map((btn) => {
             const isActive = item.status === btn.status;
@@ -163,7 +177,7 @@ const ChecklistItemRow = React.memo(({ item, isDark, onStatusChange, onObservaca
             return (
               <button
                 key={btn.status}
-                onClick={() => onStatusChange(item.id, btn.status)}
+                onClick={() => handleStatusClick(btn.status)}
                 title={btn.label}
                 className={cn(
                   "flex items-center gap-1 rounded border px-2 py-1 text-[11px] font-semibold transition-all duration-150",
@@ -178,34 +192,62 @@ const ChecklistItemRow = React.memo(({ item, isDark, onStatusChange, onObservaca
           })}
         </div>
 
-        {/* Expand toggle */}
         <button
           onClick={() => setExpanded((v) => !v)}
           className="shrink-0 rounded p-1 transition-colors hover:bg-white/10"
-          title={expanded ? "Recolher observação" : "Adicionar observação"}
+          title={expanded ? "Recolher" : "Expandir detalhes"}
           style={{ color: textMuted }}
         >
           {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
         </button>
       </div>
 
-      {/* Expanded observacao */}
+      {/* Expanded section */}
       {expanded && (
-        <div className="px-4 pb-3">
-          <Separator className="mb-3" style={{ background: borderBase }} />
-          <Label className="text-xs mb-1 block" style={{ color: textMuted }}>Observação / Evidência</Label>
-          <Textarea
-            value={item.observacao}
-            onChange={(e) => onObservacaoChange(item.id, e.target.value)}
-            placeholder="Descreva a evidência, número do documento, responsável, prazo..."
-            rows={2}
-            className="text-sm resize-none"
-            style={{
-              background: isDark ? "#0b1120" : "#f1f5f9",
-              borderColor: borderBase,
-              color: textMain,
-            }}
-          />
+        <div className="px-4 pb-4 space-y-3">
+          <Separator style={{ background: borderBase }} />
+
+          {/* Responsável + Prazo — só para Não Conforme */}
+          {isNaoConforme && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-lg" style={{ background: "hsla(0,72%,51%,0.06)", border: "1px solid hsla(0,72%,51%,0.2)" }}>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold flex items-center gap-1" style={{ color: "hsl(0,72%,51%)" }}>
+                  <User className="h-3 w-3" /> Responsável pela correção
+                </Label>
+                <Input
+                  value={item.responsavelCorrecao}
+                  onChange={(e) => onResponsavelChange(item.id, e.target.value)}
+                  placeholder="Nome do responsável..."
+                  className="text-sm h-8"
+                  style={{ background: isDark ? "#0b1120" : "#fff", borderColor: "hsla(0,72%,51%,0.3)", color: textMain }}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold flex items-center gap-1" style={{ color: "hsl(0,72%,51%)" }}>
+                  <Calendar className="h-3 w-3" /> Prazo para correção
+                </Label>
+                <Input
+                  type="date"
+                  value={item.prazoCorrecao}
+                  onChange={(e) => onPrazoChange(item.id, e.target.value)}
+                  className="text-sm h-8"
+                  style={{ background: isDark ? "#0b1120" : "#fff", borderColor: "hsla(0,72%,51%,0.3)", color: textMain }}
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-1">
+            <Label className="text-xs font-semibold" style={{ color: textMuted }}>Observação / Evidência</Label>
+            <Textarea
+              value={item.observacao}
+              onChange={(e) => onObservacaoChange(item.id, e.target.value)}
+              placeholder="Descreva a evidência, número do documento, situação encontrada..."
+              rows={2}
+              className="text-sm resize-none"
+              style={{ background: isDark ? "#0b1120" : "#f1f5f9", borderColor: borderBase, color: textMain }}
+            />
+          </div>
         </div>
       )}
     </div>
@@ -279,6 +321,14 @@ const ChecklistSST = () => {
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, observacao: obs } : item)));
   }, []);
 
+  const handleResponsavelChange = useCallback((id: string, val: string) => {
+    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, responsavelCorrecao: val } : item)));
+  }, []);
+
+  const handlePrazoChange = useCallback((id: string, val: string) => {
+    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, prazoCorrecao: val } : item)));
+  }, []);
+
   const handleSave = useCallback(() => {
     if (!empresa.trim()) { toast.error("Preencha o nome da empresa."); return; }
     const key = makeStorageKey(empresa, setor);
@@ -315,7 +365,15 @@ const ChecklistSST = () => {
           <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;text-align:center;width:130px">
             <span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:${sc.bg};color:${sc.color};border:1px solid ${sc.border}">${sc.label}</span>
           </td>
-          <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;font-size:11px;color:#64748b;min-width:160px">${item.observacao || "<span style='color:#cbd5e1'>—</span>"}</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;font-size:11px;color:#64748b;min-width:160px">
+          ${item.observacao ? `<div>${item.observacao}</div>` : ""}
+          ${item.status === "nao_conforme" && (item.responsavelCorrecao || item.prazoCorrecao) ? `
+            <div style="margin-top:6px;padding:6px 8px;background:#fef2f2;border-radius:4px;border:1px solid #fca5a5">
+              ${item.responsavelCorrecao ? `<div style="font-size:10px;color:#b91c1c"><strong>Responsável:</strong> ${item.responsavelCorrecao}</div>` : ""}
+              ${item.prazoCorrecao ? `<div style="font-size:10px;color:#b91c1c"><strong>Prazo:</strong> ${new Date(item.prazoCorrecao + "T12:00:00").toLocaleDateString("pt-BR")}</div>` : ""}
+            </div>` : ""}
+          ${!item.observacao && item.status !== "nao_conforme" ? "<span style='color:#cbd5e1'>—</span>" : ""}
+        </td>
         </tr>`;
       }).join("");
 
@@ -582,6 +640,8 @@ const ChecklistSST = () => {
                     isDark={isDark}
                     onStatusChange={handleStatusChange}
                     onObservacaoChange={handleObservacaoChange}
+                    onResponsavelChange={handleResponsavelChange}
+                    onPrazoChange={handlePrazoChange}
                   />
                 ))}
                 {filteredItems.length === 0 && (
