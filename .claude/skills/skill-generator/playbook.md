@@ -33,25 +33,21 @@
 
 ---
 
-### Fase 2 — Geração do pacote
+### Fase 2 — Delegação ao sub-agente
 
-Gerar em ordem, uma seção por vez, marcando claramente:
+Invocar `Agent` com o prompt completo contendo todos os requisitos coletados na Fase 1.
 
-```
-## A — SKILL.md
-## B — examples.md
-## C — playbook.md  ← este arquivo
-## D — scripts/
-## E — Checklist de validação
-```
+O sub-agente é responsável por:
+- Gravar `SKILL.md`, `examples.md`, `playbook.md` com `Write`
+- Criar `scripts/` e arquivos quando necessário
+- Não omitir seções nem usar `...` ou `etc`
 
-**Regras de geração:**
-
+**Regras passadas ao sub-agente:**
 - Cada passo no SKILL.md deve ser uma ação concreta e verificável
-- Nunca escrever `...`, `etc`, `faça o que for necessário`
 - examples.md deve incluir pelo menos um caso onde o input é inválido
 - Scripts: máximo ~50 linhas, shebang obrigatório, `set -euo pipefail` para bash
-- Checklist deve ser copiável e preenchível pelo usuário
+
+Após o sub-agente concluir, apresentar o resultado ao usuário nas seções A/B/C/D/E.
 
 ---
 
@@ -98,6 +94,7 @@ Gerar em ordem, uma seção por vez, marcando claramente:
 - [ ] name em kebab-case
 - [ ] description em uma frase, sem jargão desnecessário
 - [ ] Todas as tools existem na lista válida do Claude Code
+- [ ] Agent incluído na lista de tools quando o skill delega trabalho
 - [ ] trigger descreve quando invocar o skill
 - [ ] Nenhum passo usa "...", "etc", ou linguagem vaga
 - [ ] examples.md tem pelo menos um caso de falha

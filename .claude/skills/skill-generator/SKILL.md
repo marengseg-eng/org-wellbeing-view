@@ -6,6 +6,7 @@ description: >
   opcionalmente scripts/ com utilitários de suporte.
   Responde com seções A/B/C/D/E e uma checklist de validação.
 tools:
+  - Agent
   - Read
   - Write
   - Glob
@@ -50,7 +51,33 @@ ExitPlanMode, Monitor, PushNotification, AskUserQuestion
 
 Nunca invente nomes de ferramentas.
 
-### 3. Gerar o pacote em seções A/B/C/D/E
+### 3. Delegar a geração a um sub-agente
+
+Use a ferramenta `Agent` para gerar o pacote completo de forma isolada:
+
+```
+Agent({
+  description: "Gera pacote de skill: <nome>",
+  prompt: "Crie um pacote de skill para Claude Code com os seguintes dados:
+    nome: <nome>
+    descrição: <descrição>
+    ferramentas: <lista>
+    scripts: <sim/não + detalhes>
+    destino: <caminho>
+
+    Gere e grave os arquivos:
+    - SKILL.md com frontmatter YAML
+    - examples.md com mínimo 3 exemplos incluindo caso de falha
+    - playbook.md com pré-condições, sequência e pontos de decisão
+    - scripts/<arquivo> se necessário
+
+    Use Write para cada arquivo. Não omita nenhuma seção."
+})
+```
+
+O sub-agente grava os arquivos; você apresenta o resultado ao usuário nas seções A/B/C/D/E e executa a checklist.
+
+### 4. Gerar o pacote em seções A/B/C/D/E
 
 #### Seção A — SKILL.md
 
@@ -129,6 +156,7 @@ Quando o skill precisa de lógica de shell ou utilitário:
 - [ ] `name` em kebab-case
 - [ ] `description` em uma frase, sem jargão
 - [ ] Todas as `tools` existem na lista válida
+- [ ] `Agent` incluído em `tools` quando o skill delega trabalho a sub-agente
 - [ ] `trigger` descreve quando invocar o skill
 - [ ] Nenhum passo usa "..." ou "etc"
 - [ ] examples.md tem pelo menos um caso de falha
