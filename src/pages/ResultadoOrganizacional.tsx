@@ -14,7 +14,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { FactorChart } from "@/components/FactorChart";
 import { RadarFactorChart } from "@/components/RadarFactorChart";
 import { AIHAMatrix } from "@/components/AIHAMatrix";
-import { Download, Save, Printer, X, Search, AlertTriangle, ClipboardList, Sun, Moon } from "lucide-react";
+import { Download, Upload, Save, Printer, X, Search, AlertTriangle, ClipboardList, Sun, Moon } from "lucide-react";
 import { Plano5W2H, type Acao5W2H } from "@/components/Plano5W2H";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -28,6 +28,23 @@ import { ALL_FACTORS, SECTOR_FACTORS, FACTOR_5W2H_TEMPLATES, FACTOR_RECOMMENDATI
 const SECTOR_OPTIONS = Object.keys(SECTOR_FACTORS);
 
 type ClassificacaoGeral = "Conforme" | "Atenção" | "Elevado" | "Crítico" | "";
+
+type AvaliacaoExport = {
+  version: 1;
+  empresa: string;
+  cnpj: string;
+  setorCustom: string;
+  setorTipo: string;
+  dataAvaliacao: string;
+  numEntrevistados: number | string;
+  factors: Record<string, number>;
+  classificacaoTecnica: ClassificacaoGeral;
+  conclusao: string;
+  recomendacoes: string[];
+  acoes5w2hManual: Acao5W2H[];
+};
+
+const EXPORT_DATA_SCRIPT_ID = "avaliacao-data";
 
 const getClassificacao = (value: number): ClassificacaoGeral => {
   if (value <= 30) return "Conforme";
@@ -94,6 +111,7 @@ const makeStorageKey = (emp: string, set: string) => {
 /* ========== COMPONENT ========== */
 const ResultadoOrganizacional = () => {
   const reportRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [empresa, setEmpresa] = useState("");
   const [cnpj, setCnpj] = useState("");
@@ -433,10 +451,27 @@ const ResultadoOrganizacional = () => {
 
     const recsHtml = recomendacoes.filter((r) => r.trim()).map((r, i) => `<li style="margin-bottom:8px;font-size:14px;color:${textSub};line-height:1.5;">${r}</li>`).join("\n");
 
+    const exportPayload: AvaliacaoExport = {
+      version: 1,
+      empresa,
+      cnpj,
+      setorCustom,
+      setorTipo,
+      dataAvaliacao,
+      numEntrevistados,
+      factors,
+      classificacaoTecnica,
+      conclusao,
+      recomendacoes,
+      acoes5w2hManual,
+    };
+    const payloadJson = JSON.stringify(exportPayload).replace(/<\//g, "<\\/");
+
     const htmlString = `<!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Avaliação Psicossocial — ${empresa || "Organizacional"}</title>
 <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',system-ui,sans-serif;background:${bg};color:${textMain}}.page{max-width:900px;margin:0 auto;padding:40px 32px}.header{background:#0f172a;padding:24px 32px;display:flex;align-items:center;justify-content:space-between;border-radius:8px 8px 0 0}.header h1{color:#fff;font-size:18px;text-transform:uppercase;letter-spacing:1px;text-align:right;line-height:1.3}.header p{color:rgba(255,255,255,0.5);font-size:11px;margin-top:4px}.accent-bar{height:4px;background:#1e4a7a}.section{margin-top:28px}.section-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:${textMuted};margin-bottom:12px;border-bottom:2px solid ${borderC};padding-bottom:6px}.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px 24px}.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 24px}.field label{font-size:11px;font-weight:700;text-transform:uppercase;color:${textMuted};letter-spacing:0.5px}.field .value{font-size:15px;font-weight:500;color:${textMain};margin-top:2px;padding:6px 0;border-bottom:1px solid ${borderC};min-height:28px}.index-box{text-align:center;padding:28px 20px;border:2px solid ${sColor};border-radius:12px;margin-top:16px;background:${cardBg}}.index-value{font-size:56px;font-weight:800;color:${sColor}}.badge{display:inline-block;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:700;color:#fff;background:${sColor};margin-top:8px}table{width:100%;border-collapse:collapse;margin-top:8px}table th{text-align:left;padding:10px 12px;background:${dark ? "#1e293b" : "#f1f5f9"};font-size:12px;color:${textMuted};text-transform:uppercase;letter-spacing:0.5px}.conclusao{background:${cardBg};padding:20px;border-radius:8px;border:1px solid ${borderC};font-size:14px;line-height:1.7;color:${textSub};white-space:pre-wrap;margin-top:8px;min-height:60px}ol{padding-left:24px;margin-top:8px}.footer{margin-top:40px;padding-top:16px;border-top:2px solid ${borderC};text-align:center;font-size:11px;color:${textMuted}}@media print{@page{size:A4 portrait;margin:15mm}body{print-color-adjust:exact;-webkit-print-color-adjust:exact}}</style>
+<script type="application/json" id="${EXPORT_DATA_SCRIPT_ID}">${payloadJson}</script>
 </head><body><div class="page">
   <div class="header">
     <div><span style="color:rgba(255,255,255,0.7);font-size:16px;font-weight:700;">LBM BORATTI</span><br><span style="color:rgba(255,255,255,0.5);font-size:12px;">Consultoria em SST</span></div>
@@ -494,7 +529,48 @@ const ResultadoOrganizacional = () => {
     a.download = `avaliacao-${empresa || "organizacional"}.html`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [empresa, cnpj, setorCustom, setorTipo, dataAvaliacao, numEntrevistados, factors, classificacaoTecnica, classificacaoEfetiva, conclusao, recomendacoes, indiceGeral, aiha, activeFactors, acoes5w2h, isDark]);
+  }, [empresa, cnpj, setorCustom, setorTipo, dataAvaliacao, numEntrevistados, factors, classificacaoTecnica, classificacaoEfetiva, conclusao, recomendacoes, indiceGeral, aiha, activeFactors, acoes5w2h, acoes5w2hManual, isDark]);
+
+  const handleImportClick = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  const handleImportHTML = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const doc = new DOMParser().parseFromString(text, "text/html");
+      const node = doc.getElementById(EXPORT_DATA_SCRIPT_ID);
+      if (!node?.textContent) {
+        toast.error("Arquivo não é uma avaliação exportada válida.");
+        return;
+      }
+      const payload = JSON.parse(node.textContent) as AvaliacaoExport;
+      if (payload?.version !== 1 || typeof payload.empresa !== "string") {
+        toast.error("Formato de avaliação não reconhecido.");
+        return;
+      }
+      setEmpresa(payload.empresa || "");
+      setCnpj(payload.cnpj || "");
+      setSetorCustom(payload.setorCustom || "");
+      setSetorTipo(payload.setorTipo || "GERAL");
+      setDataAvaliacao(payload.dataAvaliacao || "");
+      const n = payload.numEntrevistados;
+      setNumEntrevistados(n === "" || n == null ? "" : Number(n));
+      setFactors(payload.factors || {});
+      setClassificacaoTecnica(payload.classificacaoTecnica || "");
+      setConclusao(payload.conclusao || "");
+      setRecomendacoes(payload.recomendacoes?.length ? payload.recomendacoes : [""]);
+      setAcoes5w2hManual(payload.acoes5w2hManual || []);
+      toast.success(
+        `Avaliação importada: ${payload.empresa}${payload.setorCustom ? ` — ${payload.setorCustom}` : ""}`
+      );
+    } catch {
+      toast.error("Falha ao ler o arquivo HTML.");
+    }
+  }, []);
 
   return (
     <div className={cn("min-h-screen flex flex-col transition-colors duration-300", isDark ? "bg-[#0b1120]" : "bg-gray-50")}>
@@ -828,6 +904,8 @@ const ResultadoOrganizacional = () => {
           <Button onClick={handleSave} className="gap-1.5 text-xs sm:text-sm" size="sm"><Save className="h-3.5 w-3.5 sm:h-4 sm:w-4" /><span className="hidden sm:inline">Salvar</span><span className="sm:hidden">Salvar</span></Button>
           <Button onClick={handlePrint} variant="outline" size="sm" className="gap-1.5 text-xs sm:text-sm"><Printer className="h-3.5 w-3.5 sm:h-4 sm:w-4" /><span className="hidden sm:inline">Imprimir</span></Button>
           <Button onClick={handleExportHTML} variant="outline" size="sm" className="gap-1.5 text-xs sm:text-sm"><Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" /><span className="hidden sm:inline">HTML</span><span className="sm:hidden">HTML</span></Button>
+          <Button onClick={handleImportClick} variant="outline" size="sm" className="gap-1.5 text-xs sm:text-sm"><Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4" /><span className="hidden sm:inline">Importar HTML</span><span className="sm:hidden">Importar</span></Button>
+          <input ref={fileInputRef} type="file" accept=".html,text/html" className="hidden" onChange={handleImportHTML} />
           <Button onClick={handleExportPDF} variant="outline" size="sm" className="gap-1.5 text-xs sm:text-sm"><Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" /><span className="hidden sm:inline">PDF</span><span className="sm:hidden">PDF</span></Button>
           <Button onClick={() => document.querySelector('[data-section-5w2h]')?.scrollIntoView({ behavior: 'smooth' })} variant="ghost" size="sm" className="gap-1.5 text-xs sm:text-sm"><ClipboardList className="h-3.5 w-3.5 sm:h-4 sm:w-4" /><span className="hidden sm:inline">5W2H</span></Button>
         </div>
