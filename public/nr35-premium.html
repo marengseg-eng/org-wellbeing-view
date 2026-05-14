@@ -1,0 +1,894 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NR 35 Premium | Trabalho em Altura</title>
+    <meta
+      name="description"
+      content="Treinamento premium NR 35 Trabalho em Altura com 25 slides, navegação, modo apresentação e impressão em PDF."
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #030712;
+        --panel: rgba(15, 23, 42, 0.78);
+        --panel-strong: rgba(2, 6, 23, 0.92);
+        --line: rgba(255, 255, 255, 0.16);
+        --text: #f8fafc;
+        --muted: #cbd5e1;
+        --soft: #94a3b8;
+        --gold: #fbbf24;
+        --orange: #f97316;
+        --red: #ef4444;
+        --blue: #38bdf8;
+        --cyan: #22d3ee;
+        --green: #34d399;
+        --shadow: 0 30px 90px rgba(0, 0, 0, 0.45);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        overflow-x: hidden;
+        background:
+          radial-gradient(circle at 16% 18%, rgba(56, 189, 248, 0.2), transparent 34%),
+          radial-gradient(circle at 82% 12%, rgba(251, 191, 36, 0.18), transparent 30%),
+          radial-gradient(circle at 74% 82%, rgba(239, 68, 68, 0.16), transparent 30%),
+          linear-gradient(135deg, #020617 0%, #0f172a 48%, #111827 100%);
+        color: var(--text);
+      }
+
+      body::before {
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        content: "";
+        opacity: 0.28;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.055) 1px, transparent 1px);
+        background-size: 48px 48px;
+        mask-image: linear-gradient(to bottom, black, transparent 82%);
+      }
+
+      body::after {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        content: "";
+        background: linear-gradient(90deg, rgba(2, 6, 23, 0.65), transparent 30%, rgba(2, 6, 23, 0.75));
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.85rem clamp(1rem, 3vw, 2.5rem);
+        border-bottom: 1px solid var(--line);
+        background: rgba(2, 6, 23, 0.78);
+        backdrop-filter: blur(18px);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        min-width: 0;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 2.8rem;
+        height: 2.8rem;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 1px solid rgba(251, 191, 36, 0.42);
+        border-radius: 1rem;
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.98), rgba(239, 68, 68, 0.92));
+        color: #111827;
+        font-weight: 950;
+        box-shadow: 0 16px 44px rgba(249, 115, 22, 0.35);
+      }
+
+      .brand h1 {
+        margin: 0;
+        overflow: hidden;
+        font-size: clamp(0.92rem, 2vw, 1.08rem);
+        font-weight: 900;
+        letter-spacing: 0.02em;
+        text-overflow: ellipsis;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+
+      .brand p {
+        margin: 0.1rem 0 0;
+        color: var(--soft);
+        font-size: 0.78rem;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 0.55rem;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 2.65rem;
+        padding: 0.72rem 1rem;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--text);
+        cursor: pointer;
+        font: inherit;
+        font-size: 0.88rem;
+        font-weight: 850;
+        text-decoration: none;
+        transition: 180ms ease;
+      }
+
+      .btn:hover,
+      .btn:focus-visible {
+        border-color: rgba(251, 191, 36, 0.55);
+        background: rgba(255, 255, 255, 0.14);
+        transform: translateY(-1px);
+        outline: none;
+      }
+
+      .btn-primary {
+        border-color: transparent;
+        background: linear-gradient(135deg, var(--gold), var(--orange));
+        color: #111827;
+        box-shadow: 0 16px 38px rgba(249, 115, 22, 0.32);
+      }
+
+      .progress {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 60;
+        width: 0%;
+        height: 3px;
+        background: linear-gradient(90deg, var(--gold), var(--orange), var(--red));
+        box-shadow: 0 0 26px rgba(251, 191, 36, 0.9);
+      }
+
+      .hero,
+      .slides,
+      .toolkit,
+      .closing {
+        width: min(1180px, calc(100% - 2rem));
+        margin-inline: auto;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: 1.08fr 0.92fr;
+        gap: clamp(1.2rem, 4vw, 3rem);
+        align-items: center;
+        min-height: calc(100vh - 78px);
+        padding: clamp(2rem, 6vw, 5rem) 0;
+      }
+
+      .kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.65rem;
+        margin-bottom: 1.5rem;
+        padding: 0.62rem 0.9rem;
+        border: 1px solid rgba(251, 191, 36, 0.28);
+        border-radius: 999px;
+        background: rgba(251, 191, 36, 0.1);
+        color: #fde68a;
+        font-size: 0.78rem;
+        font-weight: 950;
+        letter-spacing: 0.17em;
+        text-transform: uppercase;
+      }
+
+      .pulse {
+        width: 0.55rem;
+        height: 0.55rem;
+        border-radius: 999px;
+        background: var(--gold);
+        box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.72);
+        animation: pulse 1.7s infinite;
+      }
+
+      @keyframes pulse {
+        70% {
+          box-shadow: 0 0 0 13px rgba(251, 191, 36, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(251, 191, 36, 0);
+        }
+      }
+
+      .hero h2 {
+        margin: 0;
+        font-size: clamp(3.4rem, 8.2vw, 7.7rem);
+        font-weight: 1000;
+        letter-spacing: -0.085em;
+        line-height: 0.88;
+      }
+
+      .hero h2 span {
+        display: block;
+        background: linear-gradient(90deg, #fef3c7, #fb923c 46%, #ef4444 88%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .lead {
+        max-width: 720px;
+        margin: 1.6rem 0 0;
+        color: var(--muted);
+        font-size: clamp(1.05rem, 2.1vw, 1.38rem);
+        font-weight: 520;
+        line-height: 1.65;
+      }
+
+      .hero-metrics {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.8rem;
+        margin-top: 2rem;
+      }
+
+      .metric {
+        min-height: 7.2rem;
+        padding: 1rem;
+        border: 1px solid var(--line);
+        border-radius: 1.5rem;
+        background: rgba(255, 255, 255, 0.07);
+        box-shadow: var(--shadow);
+      }
+
+      .metric strong {
+        display: block;
+        font-size: clamp(1.6rem, 4vw, 2.6rem);
+        font-weight: 1000;
+        line-height: 1;
+      }
+
+      .metric span {
+        display: block;
+        margin-top: 0.5rem;
+        color: var(--soft);
+        font-size: 0.86rem;
+        font-weight: 760;
+        text-transform: uppercase;
+      }
+
+      .cover-card {
+        position: relative;
+        min-height: 590px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 2.2rem;
+        background:
+          linear-gradient(145deg, rgba(15, 23, 42, 0.86), rgba(2, 6, 23, 0.92)),
+          radial-gradient(circle at 24% 20%, rgba(251, 191, 36, 0.34), transparent 36%);
+        box-shadow: var(--shadow);
+      }
+
+      .cover-card::before,
+      .cover-card::after {
+        position: absolute;
+        content: "";
+        border-radius: 999px;
+      }
+
+      .cover-card::before {
+        right: -11rem;
+        top: -8rem;
+        width: 23rem;
+        height: 23rem;
+        border: 1px solid rgba(251, 191, 36, 0.25);
+        background: rgba(251, 191, 36, 0.08);
+      }
+
+      .cover-card::after {
+        left: -7rem;
+        bottom: -9rem;
+        width: 21rem;
+        height: 21rem;
+        border: 1px solid rgba(56, 189, 248, 0.2);
+        background: rgba(56, 189, 248, 0.07);
+      }
+
+      .worker {
+        position: absolute;
+        inset: 1.4rem;
+        z-index: 1;
+        display: grid;
+        place-items: center;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 1.7rem;
+        background:
+          linear-gradient(transparent 0 46%, rgba(251, 191, 36, 0.14) 46% 47%, transparent 47%),
+          linear-gradient(90deg, transparent 0 49%, rgba(255, 255, 255, 0.13) 49% 50%, transparent 50%);
+      }
+
+      .worker svg {
+        width: min(88%, 520px);
+        height: auto;
+        filter: drop-shadow(0 30px 48px rgba(0, 0, 0, 0.42));
+      }
+
+      .cover-badge {
+        position: absolute;
+        right: 1.5rem;
+        bottom: 1.5rem;
+        z-index: 2;
+        max-width: 18rem;
+        padding: 1rem;
+        border: 1px solid rgba(251, 191, 36, 0.3);
+        border-radius: 1.35rem;
+        background: rgba(2, 6, 23, 0.78);
+        backdrop-filter: blur(18px);
+      }
+
+      .cover-badge strong {
+        display: block;
+        color: #fde68a;
+        font-size: 1.55rem;
+        font-weight: 1000;
+        line-height: 1;
+      }
+
+      .cover-badge span {
+        display: block;
+        margin-top: 0.45rem;
+        color: var(--muted);
+        line-height: 1.35;
+      }
+
+      .toolkit {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+
+      .tool {
+        padding: 1.2rem;
+        border: 1px solid var(--line);
+        border-radius: 1.35rem;
+        background: rgba(255, 255, 255, 0.06);
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+      }
+
+      .tool b {
+        display: block;
+        font-size: 1.1rem;
+        font-weight: 950;
+      }
+
+      .tool small {
+        display: block;
+        margin-top: 0.4rem;
+        color: var(--soft);
+        line-height: 1.45;
+      }
+
+      .slides {
+        display: grid;
+        gap: 2rem;
+        padding: 2rem 0 5rem;
+      }
+
+      .slide {
+        position: relative;
+        display: grid;
+        grid-template-columns: 0.86fr 1.14fr;
+        min-height: 680px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 2.2rem;
+        background: var(--panel-strong);
+        box-shadow: var(--shadow);
+        isolation: isolate;
+      }
+
+      .slide::before {
+        position: absolute;
+        inset: 0;
+        z-index: -2;
+        content: "";
+        background: var(--accent);
+        opacity: 0.92;
+      }
+
+      .slide::after {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        content: "";
+        background:
+          radial-gradient(circle at 20% 16%, rgba(255, 255, 255, 0.26), transparent 22%),
+          radial-gradient(circle at 82% 72%, rgba(255, 255, 255, 0.14), transparent 24%),
+          linear-gradient(115deg, rgba(2, 6, 23, 0.08), rgba(2, 6, 23, 0.84));
+      }
+
+      .slide-left,
+      .slide-right {
+        position: relative;
+        padding: clamp(1.5rem, 4vw, 3rem);
+      }
+
+      .slide-left {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        border-right: 1px solid rgba(255, 255, 255, 0.13);
+      }
+
+      .slide-right {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background: rgba(2, 6, 23, 0.56);
+        backdrop-filter: blur(8px);
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        width: fit-content;
+        align-items: center;
+        gap: 0.55rem;
+        padding: 0.62rem 0.9rem;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 999px;
+        background: rgba(2, 6, 23, 0.32);
+        color: rgba(255, 255, 255, 0.82);
+        font-size: 0.74rem;
+        font-weight: 950;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      .icon-orb {
+        display: grid;
+        width: clamp(8rem, 17vw, 12rem);
+        height: clamp(8rem, 17vw, 12rem);
+        place-items: center;
+        margin-top: 2.4rem;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: 2rem;
+        background: rgba(255, 255, 255, 0.14);
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.28);
+        backdrop-filter: blur(10px);
+      }
+
+      .icon-orb svg {
+        width: 58%;
+        height: 58%;
+      }
+
+      .number {
+        color: rgba(255, 255, 255, 0.16);
+        font-size: clamp(5.5rem, 12vw, 10rem);
+        font-weight: 1000;
+        line-height: 0.8;
+      }
+
+      .impact {
+        max-width: 23rem;
+        margin-top: 1rem;
+        padding: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 1.4rem;
+        background: rgba(255, 255, 255, 0.13);
+        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.24);
+        font-size: clamp(1.25rem, 2.7vw, 2rem);
+        font-weight: 1000;
+        letter-spacing: -0.04em;
+        line-height: 1;
+        text-transform: uppercase;
+      }
+
+      .slide h3 {
+        margin: 0;
+        font-size: clamp(2.6rem, 6vw, 5.9rem);
+        font-weight: 1000;
+        letter-spacing: -0.07em;
+        line-height: 0.92;
+      }
+
+      .slide .subtitle {
+        margin: 1.3rem 0 0;
+        color: rgba(255, 255, 255, 0.78);
+        font-size: clamp(1.08rem, 2vw, 1.45rem);
+        font-weight: 560;
+        line-height: 1.58;
+      }
+
+      .bullets {
+        display: grid;
+        gap: 0.75rem;
+        margin: 1.8rem 0 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .bullets li {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0.85rem;
+        align-items: start;
+        padding: 0.95rem 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.11);
+        border-radius: 1.05rem;
+        background: rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.9);
+        font-size: clamp(0.98rem, 1.6vw, 1.14rem);
+        font-weight: 760;
+        line-height: 1.34;
+      }
+
+      .bullets li::before {
+        content: "✓";
+        display: grid;
+        width: 1.45rem;
+        height: 1.45rem;
+        place-items: center;
+        border-radius: 999px;
+        background: rgba(52, 211, 153, 0.16);
+        color: #86efac;
+        font-size: 0.88rem;
+        font-weight: 1000;
+      }
+
+      .closing {
+        padding: 0 0 4rem;
+      }
+
+      .closing-card {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 1.5rem;
+        align-items: center;
+        padding: clamp(1.25rem, 4vw, 2rem);
+        border: 1px solid var(--line);
+        border-radius: 2rem;
+        background: rgba(255, 255, 255, 0.07);
+        box-shadow: var(--shadow);
+      }
+
+      .closing-card h2 {
+        margin: 0;
+        font-size: clamp(1.5rem, 4vw, 2.8rem);
+        font-weight: 1000;
+        letter-spacing: -0.05em;
+      }
+
+      .closing-card p {
+        margin: 0.55rem 0 0;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .floating-nav {
+        position: fixed;
+        right: 1rem;
+        bottom: 1rem;
+        z-index: 50;
+        display: flex;
+        gap: 0.45rem;
+        padding: 0.45rem;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(2, 6, 23, 0.76);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(18px);
+      }
+
+      .floating-nav .btn {
+        min-height: 2.3rem;
+        padding: 0.55rem 0.85rem;
+      }
+
+      @media (max-width: 920px) {
+        .hero,
+        .slide,
+        .toolkit {
+          grid-template-columns: 1fr;
+        }
+
+        .cover-card {
+          min-height: 460px;
+        }
+
+        .hero-metrics {
+          grid-template-columns: 1fr;
+        }
+
+        .slide {
+          min-height: auto;
+        }
+
+        .slide-left {
+          border-right: 0;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.13);
+        }
+
+        .topbar {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .actions {
+          justify-content: flex-start;
+        }
+      }
+
+      @media print {
+        @page {
+          size: A4 landscape;
+          margin: 7mm;
+        }
+
+        html,
+        body {
+          background: #020617 !important;
+          print-color-adjust: exact;
+          -webkit-print-color-adjust: exact;
+        }
+
+        .topbar,
+        .hero,
+        .toolkit,
+        .closing,
+        .floating-nav,
+        .progress {
+          display: none !important;
+        }
+
+        .slides {
+          display: block;
+          width: 100%;
+          padding: 0;
+        }
+
+        .slide {
+          width: 100%;
+          min-height: calc(210mm - 14mm);
+          margin: 0;
+          page-break-after: always;
+          break-after: page;
+          border-radius: 0;
+          box-shadow: none;
+        }
+
+        .slide:last-child {
+          page-break-after: auto;
+          break-after: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="progress" id="progress"></div>
+
+    <header class="topbar" aria-label="Barra superior">
+      <div class="brand">
+        <div class="brand-mark">35</div>
+        <div>
+          <h1>NR 35 • Trabalho em Altura</h1>
+          <p>Deck premium em HTML • 25 slides</p>
+        </div>
+      </div>
+      <nav class="actions" aria-label="Ações do treinamento">
+        <a class="btn" href="#slides">Ver slides</a>
+        <button class="btn" type="button" id="presentBtn">Modo apresentação</button>
+        <button class="btn btn-primary" type="button" onclick="window.print()">Salvar PDF</button>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div>
+          <div class="kicker"><span class="pulse"></span> Treinamento obrigatório • Segurança crítica</div>
+          <h2 id="hero-title">Trabalho em <span>Altura</span></h2>
+          <p class="lead">
+            Uma experiência visual premium para treinar equipes em NR 35 com foco em prevenção de quedas,
+            planejamento, equipamentos, comportamento seguro e resposta a emergências.
+          </p>
+          <div class="hero-metrics" aria-label="Resumo do material">
+            <div class="metric"><strong>25</strong><span>slides prontos</span></div>
+            <div class="metric"><strong>2m+</strong><span>risco de queda</span></div>
+            <div class="metric"><strong>100%</strong><span>proteção contínua</span></div>
+          </div>
+        </div>
+
+        <aside class="cover-card" aria-label="Ilustração de trabalhador em altura">
+          <div class="worker">
+            <svg viewBox="0 0 620 620" role="img" aria-label="Trabalhador preso a linha de vida em estrutura elevada">
+              <defs>
+                <linearGradient id="rope" x1="0" x2="1"><stop stop-color="#fde68a"/><stop offset="1" stop-color="#f97316"/></linearGradient>
+                <linearGradient id="vest" x1="0" x2="1"><stop stop-color="#38bdf8"/><stop offset="1" stop-color="#2563eb"/></linearGradient>
+              </defs>
+              <path d="M88 105h445" stroke="rgba(255,255,255,.42)" stroke-width="14" stroke-linecap="round"/>
+              <path d="M116 105v405M504 105v405" stroke="rgba(148,163,184,.52)" stroke-width="12" stroke-linecap="round"/>
+              <path d="M88 508h445" stroke="rgba(255,255,255,.26)" stroke-width="18" stroke-linecap="round"/>
+              <path d="M310 102c-14 90-12 160 5 210" stroke="url(#rope)" stroke-width="8" stroke-linecap="round" fill="none"/>
+              <circle cx="314" cy="218" r="42" fill="#fbbf24"/>
+              <path d="M268 302c14-46 75-58 108-24 22 23 27 55 34 100l-47 8-15-57-23 106h-63l22-105-44 50-35-33 63-45Z" fill="url(#vest)"/>
+              <path d="M281 225c11 38 53 51 82 23" stroke="#111827" stroke-width="10" stroke-linecap="round" fill="none" opacity=".5"/>
+              <path d="M282 435l-51 86M341 434l61 83" stroke="#f8fafc" stroke-width="22" stroke-linecap="round"/>
+              <path d="M247 365l-65 35M397 375l62-48" stroke="#f8fafc" stroke-width="20" stroke-linecap="round"/>
+              <path d="M255 521h-72M400 519h77" stroke="#f97316" stroke-width="18" stroke-linecap="round"/>
+              <path d="M251 191h132" stroke="#111827" stroke-width="18" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="cover-badge">
+            <strong>Impacto visual</strong>
+            <span>Layout escuro, gradientes premium, navegação e impressão em PDF paisagem.</span>
+          </div>
+        </aside>
+      </section>
+
+      <section class="toolkit" aria-label="Recursos do material">
+        <div class="tool"><b>Navegação rápida</b><small>Botões fixos e setas do teclado para avançar entre slides.</small></div>
+        <div class="tool"><b>PDF premium</b><small>Use “Salvar PDF” para imprimir em A4 paisagem, um slide por página.</small></div>
+        <div class="tool"><b>Conteúdo direto</b><small>Mensagens curtas para fixação em treinamento, integração e DDS.</small></div>
+        <div class="tool"><b>Customizável</b><small>Inclua riscos, fotos, procedimentos e equipamentos reais da empresa.</small></div>
+      </section>
+
+      <section class="slides" id="slides" aria-label="Slides do treinamento NR 35"></section>
+
+      <section class="closing">
+        <div class="closing-card">
+          <div>
+            <h2>Use como base oficial interna</h2>
+            <p>
+              Antes de aplicar, valide o material com SESMT, liderança e procedimentos da empresa. Complete com
+              análise de risco real, demonstração prática de EPI/EPC e plano de resgate do local.
+            </p>
+          </div>
+          <button class="btn btn-primary" type="button" onclick="window.print()">Exportar PDF</button>
+        </div>
+      </section>
+    </main>
+
+    <div class="floating-nav" aria-label="Navegação de slides">
+      <button class="btn" type="button" id="prevBtn">←</button>
+      <button class="btn" type="button" id="nextBtn">→</button>
+      <button class="btn" type="button" onclick="window.scrollTo({top:0,behavior:'smooth'})">Topo</button>
+    </div>
+
+    <script>
+      const icons = {
+        helmet: '<path d="M86 156a70 70 0 0 1 140 0v26h26v44H60v-44h26v-26Z"/><path d="M102 182v-26a54 54 0 0 1 108 0v26" fill="none" stroke="currentColor" stroke-width="14"/><path d="M42 226h228" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>',
+        warning: '<path d="M156 42 288 270H24L156 42Z"/><path d="M156 112v78M156 224v4" stroke="currentColor" stroke-width="18" stroke-linecap="round"/>',
+        shield: '<path d="M156 28 270 72v78c0 74-47 120-114 146C89 270 42 224 42 150V72l114-44Z"/><path d="m104 154 34 34 74-82" fill="none" stroke="currentColor" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>',
+        anchor: '<path d="M156 52v198M92 116h128" stroke="currentColor" stroke-width="18" stroke-linecap="round"/><circle cx="156" cy="72" r="28" fill="none" stroke="currentColor" stroke-width="16"/><path d="M74 204c18 48 52 72 82 72s64-24 82-72M74 204h-32M238 204h32" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round"/>',
+        rescue: '<path d="M156 34a122 122 0 1 0 0 244 122 122 0 0 0 0-244Zm0 42v160M76 156h160" stroke="currentColor" stroke-width="18" stroke-linecap="round"/><path d="M102 102 210 210M210 102 102 210" stroke="currentColor" stroke-width="14" stroke-linecap="round"/>',
+        wind: '<path d="M34 106h158a32 32 0 1 0-32-32" fill="none" stroke="currentColor" stroke-width="18" stroke-linecap="round"/><path d="M34 158h214a32 32 0 1 1-32 32" fill="none" stroke="currentColor" stroke-width="18" stroke-linecap="round"/><path d="M34 210h108" stroke="currentColor" stroke-width="18" stroke-linecap="round"/>',
+      };
+
+      const slides = [
+        ['helmet', 'NR 35 • Slide 01', 'Trabalho em Altura', 'Treinamento premium para prevenir quedas, salvar vidas e fortalecer cultura de segurança.', '2 m ou mais exige controle total', ['Conceitos essenciais da NR 35', 'Planejamento, execução e emergência', 'Atitude segura antes, durante e depois da atividade']],
+        ['warning', 'NR 35 • Slide 02', 'Por que é crítico?', 'Queda de altura é evento de alta severidade: segundos de descuido podem mudar uma vida inteira.', 'A queda não avisa', ['Fatalidade, afastamento e sequelas permanentes', 'Impacto humano, operacional e financeiro', 'Prevenção começa antes da subida']],
+        ['shield', 'NR 35 • Slide 03', 'Objetivo da NR 35', 'Estabelecer requisitos mínimos e medidas de proteção para trabalho em altura.', 'Requisito mínimo não é meta máxima', ['Garantir planejamento e organização', 'Definir responsabilidades', 'Proteger trabalhadores envolvidos direta e indiretamente']],
+        ['warning', 'NR 35 • Slide 04', 'Quando se aplica?', 'Todo trabalho acima de 2 metros do nível inferior, onde exista risco de queda.', 'Altura + risco = NR 35', ['Telhados, andaimes, escadas, plataformas e estruturas', 'Atividades rotineiras e não rotineiras', 'Acesso, permanência e deslocamento em altura']],
+        ['shield', 'NR 35 • Slide 05', 'Hierarquia de controle', 'A melhor proteção é eliminar o risco antes de depender do equipamento individual.', 'Eliminar antes de equipar', ['Evitar trabalho em altura sempre que possível', 'Priorizar proteção coletiva', 'Usar EPI como última barreira de defesa']],
+        ['helmet', 'NR 35 • Slide 06', 'Responsabilidade da empresa', 'Segurança em altura exige gestão, recursos, procedimentos e supervisão.', 'Gestão salva vidas', ['Implementar medidas de prevenção', 'Assegurar capacitação e autorização', 'Disponibilizar sistemas de proteção adequados']],
+        ['shield', 'NR 35 • Slide 07', 'Responsabilidade do trabalhador', 'Cumprir procedimentos, comunicar riscos e exercer recusa segura diante de condição grave.', 'Você é barreira crítica', ['Usar corretamente EPI e EPC', 'Interromper atividade diante de risco grave', 'Zelar pela própria segurança e pela equipe']],
+        ['helmet', 'NR 35 • Slide 08', 'Autorização para trabalhar', 'Somente trabalhador capacitado, avaliado e autorizado deve executar atividade em altura.', 'Autorizado, apto e orientado', ['Treinamento compatível com o risco', 'Aptidão médica e condições psicofisiológicas', 'Registro formal da autorização']],
+        ['warning', 'NR 35 • Slide 09', 'Análise de risco', 'Antes de subir, enxergue o cenário completo: pessoas, ambiente, tarefa, ferramentas e energia.', 'Pare • pense • controle', ['Identificar perigos e consequências', 'Definir medidas preventivas', 'Comunicar a equipe antes da execução']],
+        ['shield', 'NR 35 • Slide 10', 'Permissão de trabalho', 'Atividades não rotineiras exigem liberação formal, rastreável e alinhada com a análise de risco.', 'Sem PT, sem execução', ['Validade limitada à tarefa e ao turno', 'Assinaturas e responsáveis definidos', 'Critérios claros para suspensão']],
+        ['anchor', 'NR 35 • Slide 11', 'Planejamento da tarefa', 'Planejar é decidir como ninguém vai cair: método, acesso, ancoragem, clima, isolamento e resgate.', 'Planejar é proteger', ['Sequência de execução segura', 'Ferramentas amarradas e materiais controlados', 'Equipe, comunicação e supervisão definidos']],
+        ['warning', 'NR 35 • Slide 12', 'Condições impeditivas', 'Algumas condições exigem parada imediata. Segurança não negocia com pressa.', 'Se não está seguro, não suba', ['Vento forte, chuva, raios ou baixa visibilidade', 'EPI danificado ou ancoragem duvidosa', 'Trabalhador sem autorização, saúde ou orientação']],
+        ['shield', 'NR 35 • Slide 13', 'Proteção coletiva', 'Guarda-corpos, redes, plataformas e isolamento reduzem o risco para todos.', 'EPC antes de EPI', ['Priorizar EPC no projeto da atividade', 'Impedir acesso de pessoas não envolvidas', 'Manter proteções íntegras durante toda a tarefa']],
+        ['anchor', 'NR 35 • Slide 14', 'EPI contra quedas', 'Cinturão, talabarte, trava-quedas, conectores e capacete formam um sistema — não peças isoladas.', 'Sistema completo ou risco aberto', ['Selecionar conforme atividade e fator de queda', 'Ajustar ao corpo antes de iniciar', 'Nunca improvisar componentes']],
+        ['anchor', 'NR 35 • Slide 15', 'Ponto de ancoragem', 'A ancoragem precisa ser planejada, resistente, compatível e posicionada para reduzir a queda livre.', 'Sua vida está presa aqui', ['Preferir ponto acima do usuário', 'Verificar certificação, inspeção e capacidade', 'Evitar cantos vivos e superfícies abrasivas']],
+        ['warning', 'NR 35 • Slide 16', 'Fator de queda', 'Conheça a distância necessária para o sistema funcionar sem impacto no nível inferior.', 'Zona livre salva', ['Calcular queda livre e absorvedor', 'Considerar altura, elasticidade e obstáculos', 'Reduzir folgas no talabarte']],
+        ['shield', 'NR 35 • Slide 17', 'Inspeção antes do uso', 'Equipamento sem inspeção é falsa sensação de segurança.', 'Olhou, testou, registrou', ['Verificar costuras, fitas, argolas e mosquetões', 'Conferir etiquetas, validade e rastreabilidade', 'Retirar de uso qualquer item suspeito']],
+        ['helmet', 'NR 35 • Slide 18', 'Escadas portáteis', 'Escada é acesso temporário, não plataforma improvisada para qualquer tarefa.', 'Escada não perdoa improviso', ['Apoio firme, amarração e ângulo adequado', 'Três pontos de contato sempre que aplicável', 'Nunca trabalhar no último degrau']],
+        ['shield', 'NR 35 • Slide 19', 'Andaimes e plataformas', 'Montagem, liberação e uso devem seguir projeto, inspeção e limites de carga.', 'Estrutura liberada, equipe segura', ['Piso completo, estável e sem vãos perigosos', 'Guarda-corpo, rodapé e acesso seguro', 'Proibir alterações por pessoa não autorizada']],
+        ['warning', 'NR 35 • Slide 20', 'Telhados e coberturas', 'Fragilidade, inclinação, claraboias e bordas tornam o telhado um dos cenários mais críticos.', 'Telha frágil mata', ['Usar passarelas e linhas de vida quando necessário', 'Isolar área inferior contra queda de objetos', 'Nunca pisar em telha frágil sem proteção']],
+        ['wind', 'NR 35 • Slide 21', 'Clima e ambiente', 'O ambiente muda rápido. A permissão segura agora pode não ser segura daqui a dez minutos.', 'Reavalie sempre', ['Monitorar vento, chuva, calor e iluminação', 'Suspender atividade com raio ou instabilidade', 'Reavaliar riscos após qualquer mudança']],
+        ['warning', 'NR 35 • Slide 22', 'Comunicação e isolamento', 'Quem está embaixo também precisa estar protegido. Queda de objetos mata.', 'Área isolada é vida preservada', ['Sinalizar e bloquear a área de risco', 'Definir canal de comunicação da equipe', 'Amarrar ferramentas e controlar materiais']],
+        ['rescue', 'NR 35 • Slide 23', 'Emergência e resgate', 'Plano de resgate não pode começar depois da queda. Cada minuto suspenso aumenta o risco.', 'Resgate rápido salva vidas', ['Equipe treinada e recursos disponíveis', 'Procedimento de acionamento claro', 'Simulados para testar tempo de resposta']],
+        ['shield', 'NR 35 • Slide 24', 'Saúde e comportamento', 'Cansaço, medicamentos, pressa e excesso de confiança também são riscos de queda.', 'A mente também protege', ['Avaliar condição física e emocional', 'Hidratação, pausas e foco na tarefa', 'Praticar recusa segura sem medo de punição']],
+        ['helmet', 'NR 35 • Slide 25', 'Compromisso final', 'Voltar para casa inteiro é o indicador mais importante de qualquer trabalho em altura.', 'Minha atitude protege a equipe', ['Eu planejo antes de subir', 'Eu uso proteção 100% do tempo', 'Eu paro quando identificar risco grave']],
+      ];
+
+      const accents = [
+        'linear-gradient(135deg,#38bdf8,#2563eb,#111827)',
+        'linear-gradient(135deg,#ef4444,#9f1239,#020617)',
+        'linear-gradient(135deg,#34d399,#0f766e,#111827)',
+        'linear-gradient(135deg,#fbbf24,#f97316,#b91c1c)',
+        'linear-gradient(135deg,#60a5fa,#4f46e5,#0f172a)',
+      ];
+
+      const slidesEl = document.getElementById('slides');
+      slidesEl.innerHTML = slides.map((slide, index) => {
+        const [icon, eyebrow, title, subtitle, impact, bullets] = slide;
+        const bulletHtml = bullets.map((item) => `<li>${item}</li>`).join('');
+        return `
+          <article class="slide" id="slide-${index + 1}" style="--accent:${accents[index % accents.length]}">
+            <div class="slide-left">
+              <div>
+                <div class="eyebrow">${eyebrow}</div>
+                <div class="icon-orb"><svg viewBox="0 0 312 312" fill="currentColor" aria-hidden="true">${icons[icon]}</svg></div>
+              </div>
+              <div>
+                <div class="number">${String(index + 1).padStart(2, '0')}</div>
+                <div class="impact">${impact}</div>
+              </div>
+            </div>
+            <div class="slide-right">
+              <h3>${title}</h3>
+              <p class="subtitle">${subtitle}</p>
+              <ul class="bullets">${bulletHtml}</ul>
+            </div>
+          </article>`;
+      }).join('');
+
+      const progress = document.getElementById('progress');
+      const slideNodes = [...document.querySelectorAll('.slide')];
+      let current = 0;
+
+      const updateProgress = () => {
+        const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+        const max = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        progress.style.width = `${max ? (scrollTop / max) * 100 : 0}%`;
+        const nearest = slideNodes.reduce((best, node, index) => {
+          const distance = Math.abs(node.getBoundingClientRect().top - 88);
+          return distance < best.distance ? { index, distance } : best;
+        }, { index: current, distance: Infinity });
+        current = nearest.index;
+      };
+
+      const goTo = (index) => {
+        current = Math.max(0, Math.min(slideNodes.length - 1, index));
+        slideNodes[current].scrollIntoView({ behavior: 'smooth', block: 'start' });
+      };
+
+      document.getElementById('prevBtn').addEventListener('click', () => goTo(current - 1));
+      document.getElementById('nextBtn').addEventListener('click', () => goTo(current + 1));
+      document.getElementById('presentBtn').addEventListener('click', async () => {
+        if (!document.fullscreenElement) {
+          await document.documentElement.requestFullscreen?.();
+          document.getElementById('slides').scrollIntoView({ behavior: 'smooth' });
+        } else {
+          await document.exitFullscreen?.();
+        }
+      });
+
+      window.addEventListener('scroll', updateProgress, { passive: true });
+      window.addEventListener('resize', updateProgress);
+      window.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowRight' || event.key === 'PageDown') goTo(current + 1);
+        if (event.key === 'ArrowLeft' || event.key === 'PageUp') goTo(current - 1);
+        if (event.key.toLowerCase() === 'p') window.print();
+      });
+      updateProgress();
+    </script>
+  </body>
+</html>
